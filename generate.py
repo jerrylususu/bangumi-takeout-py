@@ -174,7 +174,7 @@ def build_tag(item_tags):
 
 def replace_collection_status_do_verb(item_status, item_type):
     word = mapping.collection_status[item_status]
-    return word.replace("做", mapping.subject_do_word[item_type])
+    return word.replace("看", mapping.subject_do_word[item_type])
 
 
 def build_progress_bar(item):
@@ -257,13 +257,14 @@ def classify_by_status(items):
 def build_inner_html(items_by_type):
     html = ""
     for type_key, items in items_by_type.items():
-        html += html_type_begin.format(type_name=mapping.subject_type[type_key])
-        for item in items:
-            html += build_card(item)
+        if len(items) > 0:
+          html += html_type_begin.format(type_name=mapping.subject_type[type_key])
+          for item in items:
+              html += build_card(item)
     return html
 
 def main():
-    print("hello world")
+    print("start generate html")
     meta, data = load_takeout_json()
     header = build_header(meta, data)
     inner = build_inner_html(classify_by_type(data))
