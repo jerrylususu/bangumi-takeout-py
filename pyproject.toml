@@ -1,0 +1,21 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Neko Null", email = "jerrylu.mail@qq.com"},
+]
+dependencies = [
+    "requests>=2.27.1",
+    "tqdm>=4.63.0",
+]
+requires-python = ">=3.6"
+license = {text = "MIT"}
+
+[project.urls]
+Homepage = ""
+[tool.pdm]
+
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
