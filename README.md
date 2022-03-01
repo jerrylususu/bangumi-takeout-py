@@ -2,7 +2,7 @@
 
 两个简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录，并转换为方便查看的 HTML。
 
-[示例]()
+[示例](http://nekonull.me/bangumi-takeout-py/)
 
 * `fetch.py`：使用 Bangumi API 导出自己的收藏记录，并保存到 `takeout.json`
 * `generate.py`：读取 `takeout.json`，生成 HTML
