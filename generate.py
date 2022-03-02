@@ -207,6 +207,11 @@ def build_ep_detail(item):
     if "progress" in item and item["progress"] is not None:
         for watch_status in item["progress"]["eps"]:
             ep_id = watch_status["id"]
+
+            # workaround of issue #1: strange data inconsistency, some ep in progress but not in ep_data
+            if ep_id not in ep_id_to_addr_map:
+                print("skipped ep_id {}".format(ep_id))
+                continue
             ep_type_key, idx = ep_id_to_addr_map[ep_id]
             item["ep_data"][ep_type_key][idx]["status"] = watch_status["status"]["id"]
     
