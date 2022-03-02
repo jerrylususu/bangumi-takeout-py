@@ -204,7 +204,7 @@ def build_progress_bar(item):
     if item["main_ep_count"] == 0:
         # no data
         item["main_ep_count"] = 1
-    item["finish_percentage"] = max(100, round(100 * item["ep_status"] / item["main_ep_count"], 2))
+    item["finish_percentage"] = min(100, round(100 * item["ep_status"] / item["main_ep_count"], 2))
 
 
 def ep_sort_to_str(ep_sort):
@@ -249,7 +249,7 @@ def build_ep_detail(item):
             html_tooltip = "ep.{ep_sort_str} {name}".format_map(ep)
             for key, key_str in mapping.ep_tooltip_key_str.items():
                 if key in ep and ep[key]: 
-                html_tooltip += "<br>{key_str}: {value} ".format_map({"key_str": key_str, "value": ep[key]})
+                    html_tooltip += "<br>{key_str}: {value} ".format_map({"key_str": key_str, "value": ep[key]})
             ep["ep_tooltip"] = html_tooltip
             html += html_ep_button.format_map(ep)
 
