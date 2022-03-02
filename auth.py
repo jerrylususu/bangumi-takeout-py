@@ -19,19 +19,16 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         global CODE
 
-        print(self.address_string(), self.path)
         self.send_response(200)
         self.send_header('Content-type','text/html')
         self.end_headers()
 
         code = self.path.split("=")[1]
-        print(code)
 
         message = f"You can close this window now. <br> (debug) code={code}"
         self.wfile.write(bytes(message, "utf8"))
 
         CODE = code
-        # self.server.shutdown()
 
 def get_access_token():
     body = {

@@ -8,6 +8,7 @@
 * `generate.py`：读取 `takeout.json`，生成 HTML
 > `takeout.json` 中含有完整的 `subject`(条目) 和 `episode`(分集) 详情信息，`generate.py` 中只使用了一部分，如有需要也可以自行转换到其他格式。
 * `mapping.py`：数据字典
+* `auth.py`：完成 OAuth 认证，获得 API 的 Access Token
 
 ## 环境
 需要 Python 3.6 或以上版本，并需要安装 `requests` 和 `tqdm` 两个依赖。
@@ -30,10 +31,9 @@
 ## 使用
 
 
-1. 生成 Access Token：打开 [Bangumi API OAuth](https://api.bgm.tv/v0/oauth/)，选择「允许」，将网页中的全部内容复制下来，并将其中「Access Token」填入 `fetch.py` 第 9 行
-2. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episodes.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
-3. 运行 `fetch.py`，正常执行完成后应得到 `takeout.json`
-4. 运行 `generate.py`，正常执行完成后应得到 `takeout.html`，用浏览器打开即可
+1. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episodes.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
+2. 运行 `fetch.py`，在打开的认证页面中点击「允许」，正常执行完成后应得到 `takeout.json`
+3. 运行 `generate.py`，正常执行完成后应得到 `takeout.html`，用浏览器打开即可
 
 ## 工作原理
 先获取用户自身 uid/username，然后获取全部收藏，最后对每个条目逐个获取条目详情、条目内分集（如有）和个人标准进度。
@@ -46,7 +46,7 @@
 > 欢迎 PR！
 - [ ] 完全用前端实现（需要前端大触）
 - [ ] 支持筛选和搜索
-- [ ] 正确使用 Bangumi 的 OAuth 认证，而不是手动填 Access Token
+- [x] 正确使用 Bangumi 的 OAuth 认证，而不是手动填 Access Token
 - [x] 使用 [Bangumi/Archive](https://github.com/bangumi/Archive) 作为本地数据源
 - [ ] 写个简单的 GUI 界面
 - [ ] 点格子之外，支持日志和时间胶囊？（似乎没有 API）
@@ -63,7 +63,7 @@
 
 ## 版本历史
 
-* v1.1.2 - 修复音乐分集标注错误问题（见 #2），修复全部折叠/收起实现错误
+* v1.1.2 - 修复音乐分集标注错误问题（见 #2），修复全部折叠/收起实现错误，支持本地 OAuth2 认证
 * v1.1.1 - 修复完成度总为 100% bug
 * v1.1.0 - 支持本地源、新增全部折叠/收起按钮、支持自动跳过无数据的 tooltip 属性
 * v1.0.1 - 修复分集详情页链接不工作、新增分集进度异常时自动跳过（见 #1）
