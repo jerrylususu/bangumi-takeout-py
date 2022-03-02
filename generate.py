@@ -127,7 +127,7 @@ html_ep_type_name = """<span class="font-weight-bold">{ep_type_str}</span>"""
 html_ep_button = """
 <a class="btn btn-{ep_status_color}" data-toggle="tooltip" data-placement="bottom" data-html="true"
     href="https://bgm.tv/ep/{ep_id}" target="_blank"
-    title="ep.{ep_sort_str} {name} <br> 中文:{name_cn} <br> 首播:{airdate} <br>时长:{duration}">
+    title="{ep_tooltip}">
     {ep_sort_str}</a> 
 """
 
@@ -244,6 +244,13 @@ def build_ep_detail(item):
             ep["ep_status_color"] = mapping.ep_color[ep["status"]]
             ep["ep_sort_str"] = ep_sort_to_str(ep["sort"])
             ep["ep_id"] = ep["id"]
+
+            # build ep_tooltip
+            html_tooltip = "ep.{ep_sort_str} {name}".format_map(ep)
+            for key, key_str in mapping.ep_tooltip_key_str.items():
+              if key in ep:
+                html_tooltip += "<br>{key_str}: {value} ".format_map({"key_str": key_str, "value": ep[key]})
+            ep["ep_tooltip"] = html_tooltip
             html += html_ep_button.format_map(ep)
 
     return html

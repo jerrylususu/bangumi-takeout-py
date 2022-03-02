@@ -62,3 +62,9 @@ subject_do_word = {
     4: "玩",
     6: "看",
 }
+
+ep_tooltip_key_str = {
+    "name_cn": "中文",
+    "airdate": "首播",
+    "duration": "时长",
+}
