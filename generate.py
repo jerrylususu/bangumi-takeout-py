@@ -22,7 +22,7 @@ html_start = """<!doctype html>
       background-color: #f09199; 
       color: white; 
     }
-    .ep-detail-div {
+    .extra-line-height {
       line-height: 300%;
     }
   </style>
@@ -45,10 +45,10 @@ html_end = """
     $('#toggle-all-collapse').click(function () {
         const firstBody = document.querySelector('.card-body')
         if (firstBody.classList.contains('collapse')) {
-        document.querySelectorAll('.card-body').forEach((it) => {
+            document.querySelectorAll('.card-body').forEach((it) => {
                 it.classList.remove('collapse')
                 it.classList.add('show')
-        })
+            })
         } else {
             document.querySelectorAll('.card-body').forEach((it) => {
                 it.classList.remove('show')
@@ -64,13 +64,13 @@ html_end = """
 
 html_header = """<h1>Bangumi Takeout</h1>
     <p>使用 <a href="https://github.com/jerrylususu/bangumi-takeout-py" target="_blank">Bangumi Takeout</a> 为用户 <a href="https://bgm.tv/user/{user_id}" target="_blank">{username}</a> 于 {generated_at} 生成</p>
-    <p>类型统计：
+    <p class="extra-line-height">类型统计：
       {html_type_summary}
     </p>
-    <p>状态统计： 
+    <p class="extra-line-height">状态统计： 
       {html_status_summary}
     </p>
-    <p>分集图例：
+    <p class="extra-line-height">分集图例：
       {html_ep_status_example}
     </p>
     <button type="button" class="btn btn-outline-secondary" id="toggle-all-collapse"> 全部展开/收起 </button>
@@ -120,7 +120,7 @@ html_card = """
           </dd>
 
           <dt class="col-sm-2 align-self-center">分集状态</dt>
-          <dd class="col-sm-10 ep-detail-div">
+          <dd class="col-sm-10 extra-line-height">
             {html_ep_detail}
           </dd>
         </dl>
