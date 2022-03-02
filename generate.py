@@ -213,6 +213,27 @@ def ep_sort_to_str(ep_sort):
     else:
         return str(ep_sort)
 
+def rebuild_ep_type_list_for_music(item):
+    # check: not music
+    if item["subject_type"] != 3:
+        return
+
+    # check: has multiple disc?
+    if all([ep["disc"] == 0 for ep_list in item["ep_data"].values() for ep in ep_list]):
+        return
+
+    # is music, should use "disc" attribute to classify
+    new_ep_type_dict = {}
+    for ep_type, ep_list in item["ep_data"].items():
+        for ep in ep_list:
+            ep_disc_str = f"Disc {ep['disc']}"
+            if ep_disc_str not in new_ep_type_dict:
+                new_ep_type_dict[ep_disc_str] = []
+            new_ep_type_dict[ep_disc_str].append(ep)
+    
+    item["ep_data"] = new_ep_type_dict
+    item["should_display_as_disc"] = True
+
 
 def build_ep_detail(item):
     ep_id_to_addr_map = {}
@@ -234,8 +255,9 @@ def build_ep_detail(item):
     
     html = ""
 
+    rebuild_ep_type_list_for_music(item)
+
     for ep_type_key, ep_type_list in item["ep_data"].items():
-        ep_type_str = mapping.ep_type[int(ep_type_key)]
         if len(ep_type_list) == 0:
             continue
         html += html_ep_type_name.format(ep_type_str=ep_type_str)
