@@ -1,4 +1,5 @@
 import json
+from auth import do_auth
 import requests
 from time import sleep
 import time
@@ -7,15 +8,13 @@ from mapping import ep_type
 from pathlib import Path
 import logging
 
-# CHANGE THIS!!!
-ACCESS_TOKEN = ""
-#####################################
 
 logging.basicConfig(level=logging.INFO)
 
 API_SERVER = "https://api.bgm.tv"
 LOAD_WAIT_MS = 200
 USERNAME_OR_UID = ""
+ACCESS_TOKEN = ""
 
 def get_json_with_bearer_token(url):
     sleep(LOAD_WAIT_MS/1000)
@@ -116,10 +115,22 @@ def load_user():
     USERNAME_OR_UID = user_data["username"]
     return user_data
 
+def trigger_auth():
+    do_auth()
+    global ACCESS_TOKEN
+    if not Path("./.bgm_token").exists():
+        raise Exception("no access token (auth failed?)")
+    with open("./.bgm_token", "r", encoding="u8") as f:
+        tokens = json.load(f)
+        ACCESS_TOKEN = tokens["access_token"]
+        logging.info("access token loaded")
+
 def main():
-    if ACCESS_TOKEN == "":
+    trigger_auth()
+
+    if not ACCESS_TOKEN:
         logging.error("ACCESS_TOKEN is empty!")
-        raise Exception("need access token")
+        raise Exception("need access token (auth failed?)")
 
     logging.info("begin fetch")
     user = load_user()
