@@ -43,9 +43,18 @@ html_end = """
         $('[data-toggle="tooltip"]').tooltip()
     })
     $('#toggle-all-collapse').click(function () {
+        const firstBody = document.querySelector('.card-body')
+        if (firstBody.classList.contains('collapse')) {
         document.querySelectorAll('.card-body').forEach((it) => {
-            it.classList.toggle('collapse')
+                it.classList.remove('collapse')
+                it.classList.add('show')
         })
+        } else {
+            document.querySelectorAll('.card-body').forEach((it) => {
+                it.classList.remove('show')
+                it.classList.add('collapse')
+            })
+        }
     });
   </script>
 </body>
