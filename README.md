@@ -43,6 +43,7 @@
 
 
 ## 可能的下一步
+> 欢迎 PR！
 - [ ] 完全用前端实现（需要前端大触）
 - [ ] 支持筛选和搜索
 - [ ] 正确使用 Bangumi 的 OAuth 认证，而不是手动填 Access Token
@@ -52,6 +53,7 @@
 - [ ] 整理输出层级，加 `--verbose`
 - [ ] 裁剪用到的 CSS 和 Javascript 代码，构造一个完全 self-contained，无外部依赖的 HTML 文件
 - [ ] 完成度异常（不存在总集数）时使用 `striped` 进度条样式？
+- [ ] 未播出分集使用 `disbaled` 样式？
 
 ## Bug 回报
 
