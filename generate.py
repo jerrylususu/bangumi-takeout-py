@@ -39,9 +39,14 @@ html_end = """
   <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
   <script>
-  $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-  })
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+    $('#toggle-all-collapse').click(function () {
+        document.querySelectorAll('.card-body').forEach((it) => {
+            it.classList.toggle('collapse')
+        })
+    });
   </script>
 </body>
 
@@ -59,6 +64,7 @@ html_header = """<h1>Bangumi Takeout</h1>
     <p>分集图例：
       {html_ep_status_example}
     </p>
+    <button type="button" class="btn btn-outline-secondary" id="toggle-all-collapse"> 全部展开/收起 </button>
     <hr>
 """
 
