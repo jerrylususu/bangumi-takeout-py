@@ -248,7 +248,7 @@ def build_ep_detail(item):
             # build ep_tooltip
             html_tooltip = "ep.{ep_sort_str} {name}".format_map(ep)
             for key, key_str in mapping.ep_tooltip_key_str.items():
-              if key in ep:
+                if key in ep and ep[key]: 
                 html_tooltip += "<br>{key_str}: {value} ".format_map({"key_str": key_str, "value": ep[key]})
             ep["ep_tooltip"] = html_tooltip
             html += html_ep_button.format_map(ep)
