@@ -260,6 +260,10 @@ def build_ep_detail(item):
     for ep_type_key, ep_type_list in item["ep_data"].items():
         if len(ep_type_list) == 0:
             continue
+        if "should_display_as_disc" in item and item["should_display_as_disc"]:
+            ep_type_str = ep_type_key
+        else:
+            ep_type_str = mapping.ep_type[int(ep_type_key)]
         html += html_ep_type_name.format(ep_type_str=ep_type_str)
         ep_type_list.sort(key=lambda x: x["sort"])
         for idx, ep in enumerate(ep_type_list):
