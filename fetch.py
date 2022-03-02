@@ -5,11 +5,13 @@ import time
 from tqdm import tqdm
 from mapping import ep_type
 from pathlib import Path
+import logging
 
 # CHANGE THIS!!!
 ACCESS_TOKEN = ""
 #####################################
 
+logging.basicConfig(level=logging.INFO)
 
 API_SERVER = "https://api.bgm.tv"
 LOAD_WAIT_MS = 200
@@ -17,7 +19,7 @@ USERNAME_OR_UID = ""
 
 def get_json_with_bearer_token(url):
     sleep(LOAD_WAIT_MS/1000)
-    # print("load url", url)
+    logging.debug(f"load url: {url}")
     headers = {'Authorization': 'Bearer ' + ACCESS_TOKEN, 'accept': 'application/json', 'client': 'bangumi-takeout-python'}
     response = requests.get(url, headers=headers)
     return response.json()
@@ -26,19 +28,19 @@ def load_data_until_finish(endpoint, limit=30, name=""):
     resp = get_json_with_bearer_token(endpoint)
 
     if name != "":
-        print("loading data from", name)
+        logging.debug(f"loading data from {name}")
 
     if "total" not in resp:
-        print("no total", name)
+        logging.debug(f"no total {name}")
         return resp
 
     total = resp["total"]
-    print(f"{name}: total count={total}")
+    logging.debug(f"{name}: total count={total}")
     items = resp["data"]
 
     while(len(items) < total):
         offset = len(items)
-        print(f"{name}: loading from offset={offset}")
+        logging.debug(f"{name}: loading from offset={offset}")
         if "?" not in endpoint:
             new_url = f"{endpoint}?limit={limit}&offset={offset}"
         else:
@@ -46,27 +48,26 @@ def load_data_until_finish(endpoint, limit=30, name=""):
         resp = get_json_with_bearer_token(new_url)
         items += resp["data"]
     
-    print(f"{name}: loaded", len(items), "items")
+    logging.debug(f"{name}: loaded {len(items)} items")
     return items
 
 def load_user_collections():
     endpoint = f"{API_SERVER}/v0/users/{USERNAME_OR_UID}/collections"
     limit = 30
     collections = load_data_until_finish(endpoint, limit, "user collections")
-    print("loaded", len(collections), "collections")
+    logging.info(f"loaded {len(collections)} collections")
     with open("collections.json","w",encoding="u8") as f:
         json.dump(collections, f, ensure_ascii=False, indent=4)
-    print("saved collections")
 
     return collections
 
 
 def load_subject_data_remote(item):
-    print("loading subject data, id=", item["subject_id"])
+    logging.debug(f"loading subject data from remote server, id={item['subject_id']}")
     endpoint = f"{API_SERVER}/v0/subjects/{item['subject_id']}"
     subject_data = get_json_with_bearer_token(endpoint)
     item["subject_data"] = subject_data
-    print(f"subject is {subject_data['name']}, {subject_data.get('name_cn','no cn name')}") 
+    logging.debug(f"subject is {subject_data['name']}, {subject_data.get('name_cn','no cn name')}") 
 
 
 def load_subject_data_local(items):
@@ -81,7 +82,7 @@ def load_subject_data_local(items):
 
 
 def load_episode_data_remote(item):
-    print("loading episode data from remote server, id=", item["subject_id"])
+    logging.debug(f"loading episode data from remote server, id={item['subject_id']}")
     endpoint = f"{API_SERVER}/v0/episodes?subject_id={item['subject_id']}"
     item["ep_data"] = {}
     for type_key in ep_type.keys():
@@ -102,14 +103,14 @@ def load_episode_data_local(items):
 
 
 def load_progress(item):
-    print("loading progress, id=", item["subject_id"])
+    logging.debug(f"loading progress, id={item['subject_id']}")
     endpoint = f"{API_SERVER}/user/{USERNAME_OR_UID}/progress?subject_id={item['subject_id']}"
     item["progress"] = get_json_with_bearer_token(endpoint)
 
 def load_user():
     global USERNAME_OR_UID
 
-    print("loading user")
+    logging.info("loading user info")
     endpoint = f"{API_SERVER}/v0/me"
     user_data = get_json_with_bearer_token(endpoint)
     USERNAME_OR_UID = user_data["username"]
@@ -117,25 +118,28 @@ def load_user():
 
 def main():
     if ACCESS_TOKEN == "":
+        logging.error("ACCESS_TOKEN is empty!")
         raise Exception("need access token")
 
-    print("begin fetch")
+    logging.info("begin fetch")
     user = load_user()
     collections = load_user_collections()
 
     LOCAL_LOAD = False
     if Path("./subject.jsonlines").exists() and Path("./episodes.jsonlines").exists():
-        print("local data exists, will load from local")
+        logging.info("local data exists, will load from local")
         LOCAL_LOAD = True
-    
+    else:
+        logging.info("local data not exists, will load from remote")
+
     if LOCAL_LOAD:
-        print("load from local")
+        logging.debug("load from local")
         load_subject_data_local(collections)
         load_episode_data_local(collections)
     
     else:
         for item in tqdm(collections, desc="load from remote"):
-            # print(f"working on {item['subject_id']}")
+            logging.debug(f"working on {item['subject_id']}")
             load_subject_data_remote(item)
             load_episode_data_remote(item)
 
@@ -145,7 +149,7 @@ def main():
     takeout_data = {"meta": {"generated_at": time.time(), "user": user}, "data": collections}
     with open("takeout.json","w",encoding="u8") as f:
         json.dump(takeout_data, f, ensure_ascii=False, indent=4)
-    print("done")
+    logging.info("done")
 
 if __name__ == "__main__":
     main()
