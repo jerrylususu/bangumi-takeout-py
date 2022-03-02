@@ -4,6 +4,7 @@ from time import sleep
 import time
 from tqdm import tqdm
 from mapping import ep_type
+from pathlib import Path
 
 # CHANGE THIS!!!
 ACCESS_TOKEN = ""
@@ -60,20 +61,45 @@ def load_user_collections():
     return collections
 
 
-def load_subject_data(item):
+def load_subject_data_remote(item):
     print("loading subject data, id=", item["subject_id"])
     endpoint = f"{API_SERVER}/v0/subjects/{item['subject_id']}"
     subject_data = get_json_with_bearer_token(endpoint)
     item["subject_data"] = subject_data
     print(f"subject is {subject_data['name']}, {subject_data.get('name_cn','no cn name')}") 
 
-def load_episode_data(item):
-    print("loading episode data, id=", item["subject_id"])
+
+def load_subject_data_local(items):
+    subject_id_to_data_map = {item["subject_id"]:None for item in items}
+    with open("subject.jsonlines","r",encoding="u8") as f:
+        for line in tqdm(f, desc="load subject locally"):
+            subject = json.loads(line)
+            if subject["id"] in subject_id_to_data_map.keys():
+                subject_id_to_data_map[subject["id"]] = subject
+    for item in items:
+        item["subject_data"] = subject_id_to_data_map[item["subject_id"]]
+
+
+def load_episode_data_remote(item):
+    print("loading episode data from remote server, id=", item["subject_id"])
     endpoint = f"{API_SERVER}/v0/episodes?subject_id={item['subject_id']}"
     item["ep_data"] = {}
     for type_key in ep_type.keys():
         ep_type_data = load_data_until_finish(f"{endpoint}&type={type_key}", limit=100, name="episode")
         item["ep_data"][type_key] = ep_type_data
+
+def load_episode_data_local(items):
+    subject_id_to_episode_map = {item["subject_id"]:{} for item in items}
+    with open("episodes.jsonlines","r",encoding="u8") as f:
+        for line in tqdm(f, desc="load episode locally"):
+            episode = json.loads(line)
+            if episode["subject_id"] in subject_id_to_episode_map.keys():
+                if episode["type"] not in subject_id_to_episode_map[episode["subject_id"]]:
+                    subject_id_to_episode_map[episode["subject_id"]][episode["type"]] = []
+                subject_id_to_episode_map[episode["subject_id"]][episode["type"]].append(episode)
+    for item in items:
+        item["ep_data"] = subject_id_to_episode_map[item["subject_id"]]
+
 
 def load_progress(item):
     print("loading progress, id=", item["subject_id"])
@@ -96,11 +122,26 @@ def main():
     print("begin fetch")
     user = load_user()
     collections = load_user_collections()
-    for item in tqdm(collections, position=0, leave=True):
-        print(f"working on {item['subject_id']}")
-        load_subject_data(item)
-        load_episode_data(item)
+
+    LOCAL_LOAD = False
+    if Path("./subject.jsonlines").exists() and Path("./episodes.jsonlines").exists():
+        print("local data exists, will load from local")
+        LOCAL_LOAD = True
+    
+    if LOCAL_LOAD:
+        print("load from local")
+        load_subject_data_local(collections)
+        load_episode_data_local(collections)
+    
+    else:
+        for item in tqdm(collections, desc="load from remote"):
+            # print(f"working on {item['subject_id']}")
+            load_subject_data_remote(item)
+            load_episode_data_remote(item)
+
+    for item in tqdm(collections, desc="load view progress"):    
         load_progress(item)
+
     takeout_data = {"meta": {"generated_at": time.time(), "user": user}, "data": collections}
     with open("takeout.json","w",encoding="u8") as f:
         json.dump(takeout_data, f, ensure_ascii=False, indent=4)
