@@ -4,6 +4,9 @@
 
 [导出后的 HTML 文件示例](http://nekonull.me/bangumi-takeout-py/)
 
+![截图](docs/screenshot.jpg)
+
+## 文件简介
 * `fetch.py`：使用 Bangumi API 导出自己的收藏记录，并保存到 `takeout.json`
 * `generate.py`：读取 `takeout.json`，生成 HTML
 > `takeout.json` 中含有完整的 `subject`(条目) 和 `episode`(分集) 详情信息，`generate.py` 中只使用了一部分，如有需要也可以自行转换到其他格式。（欢迎 PR！）
