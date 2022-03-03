@@ -23,7 +23,7 @@ def get_json_with_bearer_token(url):
     response = requests.get(url, headers=headers)
     return response.json()
 
-def load_data_until_finish(endpoint, limit=30, name=""):
+def load_data_until_finish(endpoint, limit=30, name="", show_progress=False):
     resp = get_json_with_bearer_token(endpoint)
 
     if name != "":
@@ -37,6 +37,10 @@ def load_data_until_finish(endpoint, limit=30, name=""):
     logging.debug(f"{name}: total count={total}")
     items = resp["data"]
 
+    if show_progress:
+        pbar = tqdm(total=total, desc=name)
+        pbar.update(len(items))
+
     while(len(items) < total):
         offset = len(items)
         logging.debug(f"{name}: loading from offset={offset}")
@@ -46,14 +50,19 @@ def load_data_until_finish(endpoint, limit=30, name=""):
             new_url = f"{endpoint}&limit={limit}&offset={offset}"
         resp = get_json_with_bearer_token(new_url)
         items += resp["data"]
+        pbar.update(len(resp["data"]))
     
     logging.debug(f"{name}: loaded {len(items)} items")
+
+    if show_progress:
+        pbar.close()
+
     return items
 
 def load_user_collections():
     endpoint = f"{API_SERVER}/v0/users/{USERNAME_OR_UID}/collections"
     limit = 30
-    collections = load_data_until_finish(endpoint, limit, "user collections")
+    collections = load_data_until_finish(endpoint, limit, "user collections", show_progress=True)
     logging.info(f"loaded {len(collections)} collections")
     with open("collections.json","w",encoding="u8") as f:
         json.dump(collections, f, ensure_ascii=False, indent=4)
