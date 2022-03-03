@@ -243,8 +243,18 @@ def rebuild_ep_type_list_for_music(item):
     item["ep_data"] = new_ep_type_dict
     item["should_display_as_disc"] = True
 
+def remove_response_of_invalid_request(item):
+    to_be_deteleted = []
+    for ep_type_key, ep_type_list in item["ep_data"].items():
+        if type(ep_type_list) is dict:
+            # invalid request
+            to_be_deteleted.append(ep_type_key)
+    for key in to_be_deteleted:
+        del item["ep_data"][key]
 
 def build_ep_detail(item):
+    remove_response_of_invalid_request(item)
+
     ep_id_to_addr_map = {}
     for ep_type_key, ep_type_list in item["ep_data"].items():
         for idx, ep in enumerate(ep_type_list):
