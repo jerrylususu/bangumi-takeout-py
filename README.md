@@ -1,5 +1,7 @@
 # Bangumi Takeout
 
+<a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi-takeout-colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a>
+
 两个简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录（aka 点格子），并转换为方便查看的 HTML。默认情况下按照标注顺序从旧到新排列。
 
 [导出后的 HTML 文件示例](http://nekonull.me/bangumi-takeout-py/)
@@ -32,7 +34,6 @@
 如果账户中标注条目数较少（<=100），可以使用在线源，否则推荐使用本地源。
 
 ## 使用
-
 
 1. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episodes.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
 2. 运行 `fetch.py`，在打开的认证页面中点击「允许」，正常执行完成后应得到 `takeout.json`
