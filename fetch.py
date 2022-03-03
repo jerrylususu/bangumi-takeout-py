@@ -116,10 +116,15 @@ def load_user():
     return user_data
 
 def trigger_auth():
-    do_auth()
-    global ACCESS_TOKEN
+    if Path("./no_gui").exists():
+        logging.info("no gui, skipping oauth")
+    else:
+        do_auth()
+
     if not Path("./.bgm_token").exists():
         raise Exception("no access token (auth failed?)")
+
+    global ACCESS_TOKEN
     with open("./.bgm_token", "r", encoding="u8") as f:
         tokens = json.load(f)
         ACCESS_TOKEN = tokens["access_token"]
