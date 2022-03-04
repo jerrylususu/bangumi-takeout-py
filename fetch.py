@@ -19,7 +19,7 @@ ACCESS_TOKEN = ""
 def get_json_with_bearer_token(url):
     sleep(LOAD_WAIT_MS/1000)
     logging.debug(f"load url: {url}")
-    headers = {'Authorization': 'Bearer ' + ACCESS_TOKEN, 'accept': 'application/json', 'User-Agent': 'bangumi-takeout-python'}
+    headers = {'Authorization': 'Bearer ' + ACCESS_TOKEN, 'accept': 'application/json', 'User-Agent': 'bangumi-takeout-python/v1'}
     response = requests.get(url, headers=headers)
     return response.json()
 
