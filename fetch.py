@@ -155,7 +155,7 @@ def main():
 
     LOCAL_LOAD = False
     if Path("./subject.jsonlines").exists() and Path("./episodes.jsonlines").exists():
-        logging.info("local data exists, will load from local")
+        logging.info("local data exists, will load from local if possible")
         LOCAL_LOAD = True
     else:
         logging.info("local data not exists, will load from remote")
@@ -165,10 +165,13 @@ def main():
         load_subject_data_local(collections)
         load_episode_data_local(collections)
     
-    else:
-        for item in tqdm(collections, desc="load from remote"):
+    for item in tqdm(collections, desc="load from remote (not exist in local)"):
+        if item["subject_data"] is not None and item["ep_data"] is not None:
+            continue
             logging.debug(f"working on {item['subject_id']}")
+        if item["subject_data"] is None:
             load_subject_data_remote(item)
+        if item["ep_data"] is None:
             load_episode_data_remote(item)
 
     for item in tqdm(collections, desc="load view progress"):    
