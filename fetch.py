@@ -166,12 +166,12 @@ def main():
         load_episode_data_local(collections)
     
     for item in tqdm(collections, desc="load from remote (not exist in local)"):
-        if item["subject_data"] is not None and item["ep_data"] is not None:
+        if "subject_data" in item and "ep_data" in item and item["subject_data"] is not None and item["ep_data"] is not None:
             continue
-            logging.debug(f"working on {item['subject_id']}")
-        if item["subject_data"] is None:
+        logging.debug(f"working on {item['subject_id']}")
+        if "subject_data" not in item or item["subject_data"] is None:
             load_subject_data_remote(item)
-        if item["ep_data"] is None:
+        if "ep_data" not in item or item["ep_data"] is None:
             load_episode_data_remote(item)
 
     for item in tqdm(collections, desc="load view progress"):    
