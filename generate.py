@@ -298,6 +298,9 @@ def build_ep_detail(item):
             ep["ep_tooltip"] = html_tooltip
             html += html_ep_button.format_map(ep)
 
+    if html == "":
+        html = "(无分集)"
+
     return html
 
 def build_card(item):
