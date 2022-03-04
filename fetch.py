@@ -94,8 +94,8 @@ def load_episode_data_remote(item):
     endpoint = f"{API_SERVER}/v0/episodes?subject_id={item['subject_id']}"
     item["ep_data"] = {}
     for type_key in ep_type.keys():
-        # workaround: api server don't support type=4 and 6 yet
-        if type_key not in [0,1,2,3]:
+        # workaround: following api server spec
+        if type_key not in [0,1,2,3,4,5,6]:
             continue
         ep_type_data = load_data_until_finish(f"{endpoint}&type={type_key}", limit=100, name="episode")
         item["ep_data"][type_key] = ep_type_data
