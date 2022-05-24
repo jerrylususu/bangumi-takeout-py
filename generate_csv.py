@@ -1,6 +1,7 @@
 import json
 import csv
 from datetime import datetime
+from pathlib import Path
 
 import utils
 import mapping
@@ -44,6 +45,9 @@ def main():
     generated_at_str = utils.datetime_from_utc_to_local(datetime.utcfromtimestamp(int(meta['generated_at']))).strftime("%Y-%m-%d")
     csv_file_name = f"takeout-{meta['user']['nickname']}-{generated_at_str}.csv"
     
+    if Path("./no_gui").exists():
+        csv_file_name = "takeout.csv"
+
     items = [build_row_dict(item) for item in data]
 
     with open(csv_file_name, "w", newline="", errors="ignore") as f:
