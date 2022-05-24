@@ -142,29 +142,23 @@ def trigger_auth():
         ACCESS_TOKEN = tokens["access_token"]
         logging.info("access token loaded")
 
-def main():
-    trigger_auth()
-
     if not ACCESS_TOKEN:
         logging.error("ACCESS_TOKEN is empty!")
         raise Exception("need access token (auth failed?)")
 
-    logging.info("begin fetch")
-    user = load_user()
-    collections = load_user_collections()
 
-    LOCAL_LOAD = False
+def load_locally_if_possible(collections):
     if Path("./subject.jsonlines").exists() and Path("./episodes.jsonlines").exists():
         logging.info("local data exists, will load from local if possible")
-        LOCAL_LOAD = True
     else:
         logging.info("local data not exists, will load from remote")
+        return
 
-    if LOCAL_LOAD:
-        logging.debug("load from local")
-        load_subject_data_local(collections)
-        load_episode_data_local(collections)
-    
+    logging.debug("load from local")
+    load_subject_data_local(collections)
+    load_episode_data_local(collections)
+
+def load_remotely_for_the_rest(collections):
     for item in tqdm(collections, desc="load from remote (not exist in local)"):
         if "subject_data" in item and "ep_data" in item and item["subject_data"] is not None and item["ep_data"] is not None:
             continue
@@ -174,12 +168,29 @@ def main():
         if "ep_data" not in item or item["ep_data"] is None:
             load_episode_data_remote(item)
 
+def load_progress_data(collections):
     for item in tqdm(collections, desc="load view progress"):    
         load_progress(item)
 
+def write_to_json(user, collections):
     takeout_data = {"meta": {"generated_at": time.time(), "user": user}, "data": collections}
     with open("takeout.json","w",encoding="u8") as f:
         json.dump(takeout_data, f, ensure_ascii=False, indent=4)
+
+def main():
+    trigger_auth()
+
+    logging.info("begin fetch")
+
+    user = load_user()
+    collections = load_user_collections()
+    
+    load_locally_if_possible(collections)
+    load_remotely_for_the_rest(collections)
+    load_progress_data(collections)
+
+    write_to_json(user, collections)
+
     logging.info("done")
 
 if __name__ == "__main__":
