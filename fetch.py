@@ -1,13 +1,14 @@
 import json
-from auth import do_auth
-import requests
-from time import sleep
 import time
 from datetime import datetime
-from tqdm import tqdm
-from mapping import ep_type
 from pathlib import Path
 import logging
+
+import requests
+from tqdm import tqdm
+
+from auth import do_auth
+from mapping import ep_type
 
 
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +19,7 @@ USERNAME_OR_UID = ""
 ACCESS_TOKEN = ""
 
 def get_json_with_bearer_token(url):
-    sleep(LOAD_WAIT_MS/1000)
+    time.sleep(LOAD_WAIT_MS/1000)
     logging.debug(f"load url: {url}")
     headers = {'Authorization': 'Bearer ' + ACCESS_TOKEN, 'accept': 'application/json', 'User-Agent': 'bangumi-takeout-python/v1'}
     response = requests.get(url, headers=headers)
