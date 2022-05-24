@@ -1,10 +1,9 @@
 
-import enum
 import json
 import datetime
-import mapping
-import time
 
+import mapping
+import utils
 
 html_start = """<!doctype html>
 <html lang="zh-cn">
@@ -155,11 +154,7 @@ def build_summary(type_name_to_list_map, name_map, color_map):
         summary_html += html_summary_button.format(name=name_map[type_key], count=len(li), color=color_map[type_key])
     return summary_html
 
-# https://stackoverflow.com/questions/4770297/convert-utc-datetime-string-to-local-datetime
-def datetime_from_utc_to_local(utc_datetime):
-    now_timestamp = time.time()
-    offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
-    return utc_datetime + offset
+
 
 def build_ep_status_example():
     html = ""
@@ -169,7 +164,7 @@ def build_ep_status_example():
 
 def build_header(meta, data):
     generated_at_timestamp = meta["generated_at"]
-    generated_at_str = datetime_from_utc_to_local(datetime.datetime.utcfromtimestamp(int(generated_at_timestamp))).strftime("%Y-%m-%d %H:%M:%S")
+    generated_at_str = utils.datetime_from_utc_to_local(datetime.datetime.utcfromtimestamp(int(generated_at_timestamp))).strftime("%Y-%m-%d %H:%M:%S")
 
     type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color)
     status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color)
@@ -191,29 +186,6 @@ def replace_collection_status_do_verb(item_status, item_type):
     word = mapping.collection_status[item_status]
     return word.replace("看", mapping.subject_do_word[item_type])
 
-
-def build_progress_bar(item):
-    
-    # books -> vol, anime -> ep
-    item["ep_status"] = max([item["ep_status"], item["vol_status"]])
-
-    # determine number of main episodes (used to calculate progress percentage)
-    item["main_ep_count"] = 0
-    if "eps" in item["subject_data"]:
-      # api server has this
-      item["main_ep_count"] = item["subject_data"]["eps"]
-    else:
-      # local archive doesn't
-      if "ep_data" in item and "0" in item["ep_data"]:
-        item["main_ep_count"] = len(item["ep_data"]["0"])
-
-    if item["main_ep_count"] == 0:
-        if "volumes" in item["subject_data"] and "total_episodes" in item["subject_data"]:
-          item["main_ep_count"] = max([item["subject_data"]["volumes"], item["subject_data"]["total_episodes"]])
-    if item["main_ep_count"] == 0:
-        # no data
-        item["main_ep_count"] = 1
-    item["finish_percentage"] = min(100, round(100 * item["ep_status"] / item["main_ep_count"], 2))
 
 
 def ep_sort_to_str(ep_sort):
@@ -314,7 +286,7 @@ def build_card(item):
     item["subject_status_color"] = mapping.collection_color[item["type"]]
     item["subject_status_str"] = replace_collection_status_do_verb(item["type"], item["subject_type"])
     item["html_tag"] = build_tag(item["tags"])
-    build_progress_bar(item)
+    utils.write_progress_info(item)
     item["html_ep_detail"] = build_ep_detail(item)
 
     return html_card.format_map(item)
