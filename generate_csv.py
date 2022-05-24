@@ -50,7 +50,7 @@ def main():
 
     items = [build_row_dict(item) for item in data]
 
-    with open(csv_file_name, "w", newline="", errors="ignore") as f:
+    with open(csv_file_name, "w", encoding="gbk", newline="", errors="ignore") as f:
         writer = csv.DictWriter(f, fieldnames=items[0].keys())
         writer.writeheader()
         for item in items:
