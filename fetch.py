@@ -3,6 +3,7 @@ from auth import do_auth
 import requests
 from time import sleep
 import time
+from datetime import datetime
 from tqdm import tqdm
 from mapping import ep_type
 from pathlib import Path
@@ -113,7 +114,10 @@ def load_episode_data_local(items):
         item["ep_data"] = subject_id_to_episode_map[item["subject_id"]]
 
 
-def load_progress(item):
+def load_progress_if_not_loaded(item):
+    # skip existing progress
+    if "progress" in item:
+        return
     logging.debug(f"loading progress, id={item['subject_id']}")
     endpoint = f"{API_SERVER}/user/{USERNAME_OR_UID}/progress?subject_id={item['subject_id']}"
     item["progress"] = get_json_with_bearer_token(endpoint)
@@ -168,9 +172,28 @@ def load_remotely_for_the_rest(collections):
         if "ep_data" not in item or item["ep_data"] is None:
             load_episode_data_remote(item)
 
+def copy_existing_progress_from_old_takeout(new_collection, old_takeout):
+    existing_progress = {item["subject_id"]:{"progress": item["progress"], "updated_at": item["updated_at"]} 
+                        for item in old_takeout["data"]}
+    for item in new_collection:
+        # if the progress for that subject (item) has not been updated since last fetch
+        if item["subject_id"] in existing_progress and item["updated_at"] == existing_progress[item["subject_id"]]["updated_at"]:
+            # just use the existing progress
+            item["progress"] = existing_progress[item["subject_id"]]["progress"]
+
+def unix_timestamp_to_datetime_str(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d-%H-%M-%S")
+
 def load_progress_data(collections):
+    if Path("takeout.json").exists():
+        logging.info("takeout.json exists, will load from it")
+        with open("takeout.json", "r", encoding="u8") as f:
+            old_takeout = json.load(f)
+        Path("takeout.json").rename(f'takeout_{unix_timestamp_to_datetime_str(old_takeout["meta"]["generated_at"])}.json')
+        copy_existing_progress_from_old_takeout(collections, old_takeout)
+
     for item in tqdm(collections, desc="load view progress"):    
-        load_progress(item)
+        load_progress_if_not_loaded(item)
 
 def write_to_json(user, collections):
     takeout_data = {"meta": {"generated_at": time.time(), "user": user}, "data": collections}
