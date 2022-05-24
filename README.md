@@ -3,7 +3,7 @@
 <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> 
 🎉 直接使用 Colab 运行（无需本地部署！）
 
-两个简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录（aka 点格子），并转换为方便查看的 HTML。默认情况下按照标注顺序从旧到新排列。
+一系列简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录（aka 点格子），并转换为方便查看的 HTML 网页或 CSV 表格。
 
 [导出后的 HTML 文件示例](http://nekonull.me/bangumi-takeout-py/)
 
@@ -11,9 +11,11 @@
 
 ## 文件简介
 * `fetch.py`：使用 Bangumi API 导出自己的收藏记录，并保存到 `takeout.json`
-* `generate.py`：读取 `takeout.json`，生成 HTML
-> `takeout.json` 中含有完整的 `subject`(条目) 和 `episode`(分集) 详情信息，`generate.py` 中只使用了一部分，如有需要也可以自行转换到其他格式。（欢迎 PR！）
+* `generate_html.py`：读取 `takeout.json`，生成 HTML
+* `generate_csv.py`：读取 `takeout.json`，生成 CSV
+> `takeout.json` 中含有完整的 `subject`(条目) 和 `episode`(分集) 详情信息，此处只使用了一部分，如有需要也可以自行转换到其他格式。（欢迎 PR！）
 * `mapping.py`：数据字典
+* `utils.py`：用于生成结果的一些函数
 * `auth.py`：完成 OAuth 认证，获得 API 的 Access Token
 
 ## 环境
@@ -41,9 +43,13 @@
 
 1. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episodes.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
 2. 运行 `fetch.py`，在打开的认证页面中点击「允许」，正常执行完成后应得到 `takeout.json`
+    
     > 如果出现认证异常可以稍后再试，似乎有概率会撞到 CloudFlare 盾，原因暂时未知。
-3. 运行 `generate.py`，正常执行完成后应得到 `takeout.html`，用浏览器打开即可
-    > `generate.py` 只使用 `takeout.json` 作为输入，如果已有 JSON，只需要从 JSON 转换成 HTML，则无需运行 `fetch.py`。
+    >
+    > 如有可能，请将之前的 `takeout.json` 放置于同目录下，这样会使用增量方式更新收视进度，能极大提升导出速度。
+3. 根据需要运行 `generate_html.py` 和 `generate_csv.py`，正常执行完成后生成的文件在脚本同目录下
+    
+    > `generate_XXX.py` 只使用 `takeout.json` 作为输入，如果已有 JSON，只需要从 JSON 转换成 HTML，则无需运行 `fetch.py`。
 
 ## 工作原理
 先获取用户自身 uid/username，然后获取全部收藏，最后对每个条目逐个获取条目详情、条目内分集（如有）和个人标注进度。
@@ -70,11 +76,3 @@
 - 如有可能请尽量附上完整的 stack trace 和使用的 `takeout.json` 文件。如文件过大无法加入 issue 附件，可以先压缩，然后手动添加一个 `.txt` 后缀名。
 - 启用日志：在 `fetch.py` 中将 `logging.basicConfig(level=logging.INFO)` 改为 `logging.basicConfig(level=logging.DEBUG)`
 
-
-## 版本历史
-
-* v1.1.2 - 修复音乐分集标注错误问题（见 #2），修复全部折叠/收起实现错误，支持本地 OAuth2 认证
-* v1.1.1 - 修复完成度总为 100% bug
-* v1.1.0 - 支持本地源、新增全部折叠/收起按钮、支持自动跳过无数据的 tooltip 属性
-* v1.0.1 - 修复分集详情页链接不工作、新增分集进度异常时自动跳过（见 #1）
-* v1.0.0 - 初版本
