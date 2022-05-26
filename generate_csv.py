@@ -99,10 +99,10 @@ def build_row_dict(item):
         "最后标注": item["updated_at"],
         "完成度": f'{item["ep_status"]} | {item["main_ep_count"]}',
         "完成度(百分比)": min(100, round(100 * item["ep_status"] / item["main_ep_count"], 2)),
+        "完成单集": format_progress_finished_only(item),
         "我的评分": format_rate(item["rate"]),
         "我的标签": " ".join(item["tags"]),
         "我的评论": format_comment(item["comment"]),
-        "完成单集": format_progress_finished_only(item),
         # "分集详细状态": repr(item["progress_detail"])
     }
     return row
