@@ -188,65 +188,12 @@ def replace_collection_status_do_verb(item_status, item_type):
 
 
 
-def ep_sort_to_str(ep_sort):
-    if int(ep_sort) - ep_sort < 0.001:
-        return str(int(ep_sort))
-    else:
-        return str(ep_sort)
 
-def rebuild_ep_type_list_for_music(item):
-    # check: not music
-    if item["subject_type"] != 3:
-        return
-
-    # check: has multiple disc?
-    if all([ep["disc"] == 0 for ep_list in item["ep_data"].values() for ep in ep_list]):
-        return
-
-    # is music, should use "disc" attribute to classify
-    new_ep_type_dict = {}
-    for ep_type, ep_list in item["ep_data"].items():
-        for ep in ep_list:
-            ep_disc_str = f"Disc {ep['disc']}"
-            if ep_disc_str not in new_ep_type_dict:
-                new_ep_type_dict[ep_disc_str] = []
-            new_ep_type_dict[ep_disc_str].append(ep)
-    
-    item["ep_data"] = new_ep_type_dict
-    item["should_display_as_disc"] = True
-
-def remove_response_of_invalid_request(item):
-    to_be_deteleted = []
-    for ep_type_key, ep_type_list in item["ep_data"].items():
-        if type(ep_type_list) is dict:
-            # invalid request
-            to_be_deteleted.append(ep_type_key)
-    for key in to_be_deteleted:
-        del item["ep_data"][key]
 
 def build_ep_detail(item):
-    remove_response_of_invalid_request(item)
+    utils.combine_ep_and_progress(item)
 
-    ep_id_to_addr_map = {}
-    for ep_type_key, ep_type_list in item["ep_data"].items():
-        for idx, ep in enumerate(ep_type_list):
-            ep_id_to_addr_map[ep["id"]] = (ep_type_key,idx)
-            ep["status"] = 0
-
-    if "progress" in item and item["progress"] is not None:
-        for watch_status in item["progress"]["eps"]:
-            ep_id = watch_status["id"]
-
-            # workaround of issue #1: strange data inconsistency, some ep in progress but not in ep_data
-            if ep_id not in ep_id_to_addr_map:
-                print("skipped ep_id {}".format(ep_id))
-                continue
-            ep_type_key, idx = ep_id_to_addr_map[ep_id]
-            item["ep_data"][ep_type_key][idx]["status"] = watch_status["status"]["id"]
-    
     html = ""
-
-    rebuild_ep_type_list_for_music(item)
 
     for ep_type_key, ep_type_list in item["ep_data"].items():
         if len(ep_type_list) == 0:
@@ -259,7 +206,7 @@ def build_ep_detail(item):
         ep_type_list.sort(key=lambda x: x["sort"])
         for idx, ep in enumerate(ep_type_list):
             ep["ep_status_color"] = mapping.ep_color[ep["status"]]
-            ep["ep_sort_str"] = ep_sort_to_str(ep["sort"])
+            ep["ep_sort_str"] = utils.ep_sort_to_str(ep["sort"])
             ep["ep_id"] = ep["id"]
 
             # build ep_tooltip
