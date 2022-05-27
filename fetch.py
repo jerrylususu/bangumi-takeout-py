@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
+from requests import JSONDecodeError
+
 import requests
 from tqdm import tqdm
 
