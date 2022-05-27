@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
+from requests import JSONDecodeError
+
 import requests
 from tqdm import tqdm
 
@@ -188,10 +190,13 @@ def unix_timestamp_to_datetime_str(timestamp):
 def load_progress_data(collections):
     if Path("takeout.json").exists():
         logging.info("takeout.json exists, will load from it")
-        with open("takeout.json", "r", encoding="u8") as f:
-            old_takeout = json.load(f)
-        Path("takeout.json").rename(f'takeout_{unix_timestamp_to_datetime_str(old_takeout["meta"]["generated_at"])}.json')
-        copy_existing_progress_from_old_takeout(collections, old_takeout)
+        try:
+            with open("takeout.json", "r", encoding="u8") as f:
+                old_takeout = json.load(f)
+            Path("takeout.json").rename(f'takeout_{unix_timestamp_to_datetime_str(old_takeout["meta"]["generated_at"])}.json')
+            copy_existing_progress_from_old_takeout(collections, old_takeout)
+        except JSONDecodeError:
+            logging.info("empty takeout.json... seems to be Google Colab issue, skipping it")
 
     for item in tqdm(collections, desc="load view progress"):    
         load_progress_if_not_loaded(item)
