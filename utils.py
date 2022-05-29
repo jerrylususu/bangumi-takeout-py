@@ -1,5 +1,6 @@
 import time
 import datetime
+from math import isclose
 
 # 写入进度信息（用于完成度计算）
 def write_progress_info(item):
@@ -85,7 +86,7 @@ def rebuild_ep_type_list_for_music(item):
 
 def ep_sort_to_str(ep_sort):
     # 1.0 -> 1, 13.5 -> 13.5
-    if int(ep_sort) - ep_sort < 0.001:
+    if isclose(int(ep_sort), ep_sort):
         return str(int(ep_sort))
     else:
         return str(ep_sort)
