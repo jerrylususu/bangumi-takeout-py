@@ -3,6 +3,10 @@
 <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> 
 🎉 直接使用 Colab 运行（无需本地部署！）
 
+> 测试中：导出讨论、日志和目录（`bangumi_takeout_more_colab.ipynb`，`dump_personal.py`）
+> <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_more_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> 
+
+
 一系列简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录（aka 点格子），并转换为方便查看的 HTML 网页或 CSV 表格。
 
 [导出后的 HTML 文件示例](http://nekonull.me/bangumi-takeout-py/)
