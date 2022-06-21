@@ -262,7 +262,7 @@ def main(user_id="", user_agent="", topic=True, blog=True, created_index=True, c
         write_list_dict_to_csv(collected_indexes, "collected_indexes.csv")
 
     if deep:
-        print("页面收集")
+        print("深度导出已启用")
 
         if topic:
             urls = [t["topic_url"] for t in my_topics]
