@@ -52,7 +52,8 @@ def load_data_until_finish(endpoint, limit=30, name="", show_progress=False):
             new_url = f"{endpoint}&limit={limit}&offset={offset}"
         resp = get_json_with_bearer_token(new_url)
         items += resp["data"]
-        pbar.update(len(resp["data"]))
+        if show_progress:
+            pbar.update(len(resp["data"]))
     
     logging.debug(f"{name}: loaded {len(items)} items")
 
