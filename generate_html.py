@@ -5,6 +5,8 @@ import datetime
 import mapping
 import utils
 
+OFFSET_TIMEDELTA = None
+
 html_start = """<!doctype html>
 <html lang="zh-cn">
 
@@ -164,7 +166,7 @@ def build_ep_status_example():
 
 def build_header(meta, data):
     generated_at_timestamp = meta["generated_at"]
-    generated_at_str = utils.datetime_from_utc_to_local(datetime.datetime.utcfromtimestamp(int(generated_at_timestamp))).strftime("%Y-%m-%d %H:%M:%S")
+    generated_at_str = utils.datetime_from_utc_with_offset(datetime.datetime.utcfromtimestamp(int(generated_at_timestamp)), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
 
     type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color)
     status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color)
@@ -236,6 +238,9 @@ def build_card(item):
     utils.write_progress_info(item)
     item["html_ep_detail"] = build_ep_detail(item)
 
+    item["updated_at"] = utils.datetime_from_utc_with_offset(
+        datetime.datetime.fromisoformat(item["updated_at"].strip("Z")), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
+
     return html_card.format_map(item)
     
 def classify_by_type(items):
@@ -260,7 +265,11 @@ def build_inner_html(items_by_type):
               html += build_card(item)
     return html
 
-def main():
+def main(offset_hours=None):
+    global OFFSET_TIMEDELTA
+    if offset_hours is not None:
+        OFFSET_TIMEDELTA = datetime.timedelta(hours=offset_hours)
+    
     print("start generate html")
     meta, data = load_takeout_json()
     header = build_header(meta, data)
@@ -271,4 +280,4 @@ def main():
     print("done")
 
 if __name__ == "__main__":
-    main()
+    main(offset_hours=None)

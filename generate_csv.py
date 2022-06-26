@@ -1,11 +1,13 @@
 import json
 import csv
-from datetime import datetime
+import datetime
 from pathlib import Path
 from math import isclose
 
 import utils
 import mapping
+
+OFFSET_TIMEDELTA = None
 
 def format_rate(rate):
     if rate == 0:
@@ -90,6 +92,9 @@ def build_row_dict(item):
     utils.write_progress_info(item)
     write_progress_detail(item)
 
+    item["updated_at"] = utils.datetime_from_utc_with_offset(
+        datetime.datetime.fromisoformat(item["updated_at"].strip("Z")), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
+
     row = {
         "名称": item["subject_data"]["name"],
         "名称(中文)": item["subject_data"].get("name_cn", ""),
@@ -113,10 +118,14 @@ def load_takeout_json():
         takeout_data = json.load(f)
     return takeout_data["meta"], takeout_data["data"]
 
-def main():
+def main(offset_hours=None):
+    global OFFSET_TIMEDELTA
+    if offset_hours is not None:
+        OFFSET_TIMEDELTA = datetime.timedelta(hours=offset_hours)
+
     print("start generate csv")
     meta, data = load_takeout_json()
-    generated_at_str = utils.datetime_from_utc_to_local(datetime.utcfromtimestamp(int(meta['generated_at']))).strftime("%Y-%m-%d")
+    generated_at_str = utils.datetime_from_utc_with_offset(datetime.datetime.utcfromtimestamp(int(meta['generated_at'])), OFFSET_TIMEDELTA).strftime("%Y-%m-%d")
     csv_file_name = f"takeout-{meta['user']['nickname']}-{generated_at_str}.csv"
     
     if Path("./no_gui").exists():
@@ -133,4 +142,4 @@ def main():
     print("done")
 
 if __name__ == "__main__":
-    main()
+    main(offset_hours=None)

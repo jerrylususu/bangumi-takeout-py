@@ -26,9 +26,10 @@ def write_progress_info(item):
     item["finish_percentage"] = min(100, round(100 * item["ep_status"] / item["main_ep_count"], 2))
 
 # https://stackoverflow.com/questions/4770297/convert-utc-datetime-string-to-local-datetime
-def datetime_from_utc_to_local(utc_datetime):
-    now_timestamp = time.time()
-    offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
+def datetime_from_utc_with_offset(utc_datetime, offset: datetime.timedelta=None):
+    if offset is None:
+        now_timestamp = time.time()
+        offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
     return utc_datetime + offset
 
 
