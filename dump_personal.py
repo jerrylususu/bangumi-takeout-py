@@ -12,7 +12,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 
-delay_sec_between_request = 1
+delay_sec_between_request = 10
 
 api_endpoint = "https://api.bgm.tv"
 domain_name = "http://bgm.tv"
@@ -456,7 +456,7 @@ def local_test():
     main(user_id=user_id, user_agent=ua, 
          topic=False, reply_topic=False, 
          blog=False, created_index=False, 
-         collected_index=False, timeline=False, person=True, friend=False, deep=True)    
+         collected_index=False, timeline=True, person=False, friend=False, deep=False)    
 
 
 def command_line_launch():
