@@ -12,7 +12,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 
-delay_sec_between_request = 10
+delay_sec_between_request = 5
 
 api_endpoint = "https://api.bgm.tv"
 domain_name = "http://bgm.tv"

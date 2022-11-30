@@ -14,7 +14,7 @@ from mapping import ep_type
 logging.basicConfig(level=logging.INFO)
 
 API_SERVER = "https://api.bgm.tv"
-LOAD_WAIT_MS = 10000
+LOAD_WAIT_MS = 5000
 USERNAME_OR_UID = ""
 ACCESS_TOKEN = ""
 
