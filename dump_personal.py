@@ -417,8 +417,8 @@ def main(user_id="", user_agent="",
             ids = [t["topic_id"] for t in my_topics]
             save_url_list(urls, ids, "topic")
         if reply_topic:
-            urls = [t["topic_url"] for t in my_topics]
-            ids = [t["topic_id"] for t in my_topics]
+            urls = [t["topic_url"] for t in my_reply_topics]
+            ids = [t["topic_id"] for t in my_reply_topics]
             save_url_list(urls, ids, "reply_topic")
         if blog:
             urls = [b["blog_url"] for b in blogs]
