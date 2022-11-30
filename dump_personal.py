@@ -44,6 +44,31 @@ def parse_topic_row(row):
         "publish_time": publish_time
     }
 
+def parse_reply_topic_row(row):
+    topic_element = row.find("td", class_="subject").find("a")
+    topic_title = topic_element.text
+    topic_url = domain_name + topic_element["href"]
+    topic_id = topic_url.split("/")[-1]
+    author_element = row.find("span", class_="tip_i").find("a")
+    author_url = domain_name + author_element["href"]
+    author_name = author_element.text
+    group_element = row.find("td", class_="author").find("a")
+    group_title = group_element.text
+    group_link = domain_name + group_element["href"]
+    post_count = int(row.find("td", class_="posts").text)
+    publish_time = row.find("small", class_="time").text
+    return {
+        "topic_id": topic_id,
+        "topic_title": topic_title,
+        "topic_url": topic_url,
+        "author_url": author_url,
+        "author_name": author_name,
+        "group_title": group_title,
+        "group_link": group_link,
+        "post_count": post_count,
+        "publish_time": publish_time
+    }
+
 
 def parse_blog_row(row):
     blog_title_element = row.find("h2", class_="title").a
@@ -102,6 +127,28 @@ def parse_index_collect_row(row):
         "created_at": created_at
     }
 
+def parse_person_row(row):
+    element = row.find("a")
+    person_url = domain_name + element["href"]
+    person_id = element["href"].split("/")[-1]
+    person_name = element["title"]
+    return {
+        "person_id": person_id,
+        "person_name": person_name,
+        "person_url": person_url
+    }
+
+def parse_friend_row(row):
+    element = row.find("a", class_="avatar")
+    friend_url = domain_name + element["href"]
+    friend_id = element["href"].split("/")[-1]
+    friend_name = element.text.strip()
+    return {
+        "friend_id": friend_id,
+        "friend_name": friend_name,
+        "friend_url": friend_url
+    }
+
 def common_multi_page_fetch(base_url, extract_rows):
     global headers, cookiejar
     # print(f"requesting page 1 on {base_url}")
@@ -126,6 +173,27 @@ def common_multi_page_fetch(base_url, extract_rows):
         rows += new_rows
     return rows
 
+def fetch_timelines_until_empty_response(base_url):
+    global headers, cookiejar
+    # print(f"requesting page 1 on {base_url}")
+    current_page = 1
+    response_not_empty = True
+    
+    pbar = tqdm(desc="timeline")
+    while response_not_empty:
+        time.sleep(delay_sec_between_request)
+        resp = requests.get(f"{base_url}{current_page}", headers=headers, cookies=cookiejar)
+        response_not_empty = (len(resp.content) != 0)
+        if not response_not_empty:
+            break
+        
+        with open(f"output/html/timeline/{current_page}.html", "wb") as f:
+            f.write(resp.content)
+        pbar.update(1)
+        current_page += 1
+    pbar.close()
+
+    
 def parse_rows(rows, one_row_parser):
     return [one_row_parser(row) for row in rows]
 
@@ -197,10 +265,18 @@ def save_index_list(ids, folder_name):
         save_index(id, folder_name)
         time.sleep(delay_sec_between_request)
 
-def prepare_folder_structure(topic=True, blog=True, created_index=True, collected_index=True):
+def prepare_folder_structure(topic=True, reply_topic=True, 
+                             blog=True, 
+                             created_index=True, collected_index=True, 
+                             timeline=True,
+                             person=True,
+                             friend=True
+                            ):
     Path("output/csv/").mkdir(parents=True,exist_ok=True)
     if topic:
         Path("output/html/topic").mkdir(parents=True,exist_ok=True)
+    if reply_topic:
+        Path("output/html/reply_topic").mkdir(parents=True,exist_ok=True)
     if blog:
         Path("output/html/blog").mkdir(parents=True,exist_ok=True)
     if created_index:
@@ -209,21 +285,52 @@ def prepare_folder_structure(topic=True, blog=True, created_index=True, collecte
     if collected_index:
         Path("output/html/collected_index").mkdir(parents=True,exist_ok=True)
         Path("output/index_json/collected_index").mkdir(parents=True,exist_ok=True)
+    if timeline:
+        Path("output/html/timeline").mkdir(parents=True,exist_ok=True)
+    if person:
+        # 人物信息可以从 Bangumi Archive 匹配到（基于人物 ID），暂时先不保存了
+        # TODO: 从 Bangumi Archive 匹配人物信息
+        pass
+    if friend:
+        Path("output/html/friend").mkdir(parents=True,exist_ok=True)
 
+        
 def compress_output():
     shutil.make_archive("dump", "zip", "output")
 
-def main(user_id="", user_agent="", topic=True, blog=True, created_index=True, collected_index=True, deep=True):
+def main(user_id="", user_agent="", 
+         topic=True, reply_topic=True, 
+         blog=True, 
+         created_index=True, collected_index=True, 
+         timeline=True,
+         person=True,
+         friend=True,
+         deep=True):
     global headers, cookiejar
     cookiejar = MozillaCookieJar("bangumi_cookie.txt")
     cookiejar.load()
     headers["User-Agent"] = user_agent
 
-    prepare_folder_structure()
+    print("here!")
+
+    prepare_folder_structure(
+        topic=topic, 
+        reply_topic=reply_topic, 
+        blog=blog, 
+        created_index=created_index, 
+        collected_index=collected_index, 
+        timeline=timeline,
+        person=person,
+        friend=friend
+    )
 
     # 我发表的讨论
     my_topic_url = "https://bgm.tv/group/my_topic"
     topic_extract_rows = lambda soup: soup.find_all("tr", class_="topic")
+    
+    # 我回复的讨论
+    my_reply_topic_url = "https://bgm.tv/group/my_reply"
+    reply_topic_extract_rows = lambda soup: soup.find_all("tr", class_="topic")
 
     # 日志
     blogs_url = f"https://bgm.tv/user/{user_id}/blog"
@@ -237,12 +344,31 @@ def main(user_id="", user_agent="", topic=True, blog=True, created_index=True, c
     index_collect_page_url = f"https://bgm.tv/user/{user_id}/index/collect"
     index_collect_extract_rows = lambda soup: soup.find_all("li", class_="tml_item")
 
+    # 时间胶囊
+    # TODO: 从 HTML 解析时间胶囊
+    timeline_url = f"https://bgm.tv/user/{user_id}/timeline?type=all&ajax=1&page="
+    
+    # 人物
+    person_url = f"https://bgm.tv/user/{user_id}/mono/person"
+    character_url = f"https://bgm.tv/user/{user_id}/mono/character"
+    person_extract_rows = lambda soup: soup.find_all("li", class_="clearit")
+    
+    # 朋友
+    friend_url = f"https://bgm.tv/user/{user_id}/friends"
+    friend_extract_rows = lambda soup: soup.find_all("li", class_="user")
+    
     print("列表收集")
     if topic:
         print("我发表的讨论")
         my_topics = parse_rows(common_multi_page_fetch(my_topic_url, topic_extract_rows), parse_topic_row)
         print(f"dumped {len(my_topics)} my topics")
         write_list_dict_to_csv(my_topics, "my_topics.csv")
+    
+    if reply_topic:
+        print("我回复的讨论")
+        my_reply_topics = parse_rows(common_multi_page_fetch(my_reply_topic_url, topic_extract_rows), parse_reply_topic_row)
+        print(f"dumped {len(my_reply_topics)} my reply topics")
+        write_list_dict_to_csv(my_reply_topics, "my_reply_topics.csv")
 
     if blog:
         print("日志")
@@ -269,6 +395,10 @@ def main(user_id="", user_agent="", topic=True, blog=True, created_index=True, c
             urls = [t["topic_url"] for t in my_topics]
             ids = [t["topic_id"] for t in my_topics]
             save_url_list(urls, ids, "topic")
+        if reply_topic:
+            urls = [t["topic_url"] for t in my_topics]
+            ids = [t["topic_id"] for t in my_topics]
+            save_url_list(urls, ids, "reply_topic")
         if blog:
             urls = [b["blog_url"] for b in blogs]
             ids = [b["blog_id"] for b in blogs]
@@ -283,9 +413,43 @@ def main(user_id="", user_agent="", topic=True, blog=True, created_index=True, c
             ids = [i["index_id"] for i in collected_indexes]
             save_url_list(urls, ids, "collected_index")
             save_index_list(ids, "collected_index")
+        if friend:
+            urls = [t["friend_url"] for t in my_friends]
+            ids = [t["friend_id"] for t in my_friends]
+            save_url_list(urls, ids, "friend")
+
+        if timeline:
+            print("时间胶囊（这个可能比较慢，建议多等等")
+            fetch_timelines_until_empty_response(timeline_url)
+        
+        if person:
+            print("收藏的现实人物")
+            my_person = parse_rows(common_multi_page_fetch(person_url, person_extract_rows), parse_person_row)
+            print(f"dumped {len(my_person)} my person")
+            write_list_dict_to_csv(my_person, "my_person.csv")
+            
+            print("收藏的虚拟人物")
+            my_characters = parse_rows(common_multi_page_fetch(character_url, person_extract_rows), parse_person_row)
+            print(f"dumped {len(my_characters)} my character")
+            write_list_dict_to_csv(my_characters, "my_characters.csv")
+        
+        if friend:
+            print("好友")
+            my_friends =  parse_rows(common_multi_page_fetch(friend_url, friend_extract_rows), parse_friend_row)
+            print(f"dumped {len(my_friends)} my friend")
+            write_list_dict_to_csv(my_friends, "my_friends.csv")
 
     compress_output()
     print("Done.")
+
+def local_test():
+    user_id = ""
+    ua = ""
+    main(user_id=user_id, user_agent=ua, 
+         topic=False, reply_topic=False, 
+         blog=False, created_index=False, 
+         collected_index=False, timeline=False, person=False, friend=True, deep=True)    
+
 
 def command_line_launch():
     parser = argparse.ArgumentParser()
@@ -293,12 +457,24 @@ def command_line_launch():
     parser.add_argument("--user_agent", help="Browser's User Agent String")
     parser.add_argument("--deep", help="also fetch HTML and JSON, not just the list")
     parser.add_argument("--topic", help="我发表的讨论", action="store_true")
+    parser.add_argument("--reply_topic", help="我回复的讨论", action="store_true")
     parser.add_argument("--blog", help="日志", action="store_true")
     parser.add_argument("--created_index", help="我创建的目录", action="store_true")
     parser.add_argument("--collected_index", help="我收藏的目录", action="store_true")
+    parser.add_argument("--timeline", help="时间胶囊", action="store_true")
+    parser.add_argument("--person", help="我收藏的人物（虚拟&现实）", action="store_true")
+    parser.add_argument("--friend", help="我的好友", action="store_true")
     
     args = parser.parse_args()
-    main(args.user_id, args.user_agent, args.topic, args.blog, args.created_index, args.collected_index, args.deep)
+    main(user_id=args.user_id, user_agent=args.user_agent, 
+         topic=args.topic, reply_topic=args.reply_topic, 
+         blog=args.blog, 
+         created_index=args.created_index, collected_index=args.collected_index, 
+         timeline=args.timeline, 
+         person=args.person, 
+         friend=args.friend, 
+         deep=args.deep)   
 
 if __name__ == "__main__":
     command_line_launch()
+    # local_test()
