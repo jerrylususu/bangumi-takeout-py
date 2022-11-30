@@ -1,10 +1,19 @@
 # Bangumi Takeout
 
-<a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> 
-🎉 直接使用 Colab 运行（无需本地部署！）
+## TLDR
 
-> 测试中：导出讨论、日志和目录（`bangumi_takeout_more_colab.ipynb`，`dump_personal.py`）
-> <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_more_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> 
+再见了，谢谢所有的鱼 🐟
+
+|                                         | Bangumi Takeout                                              | Bangumi Takeout More                                         |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 🎉 直接使用 Colab 运行（无需本地部署！） | <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> | <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_more_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> |
+| 导出内容                                | 标注记录（点格子）                                           | - 讨论（我发表的、我回复的）<br />- 日志<br />- 目录（我创建的、我收藏的）<br />- 时间胶囊<br />- 收藏的人物（现实、虚拟）<br />- 好友<br /> |
+| 导出机制                                | 基于 Bangumi API（稳定、官方支持）                           | 用 Cookies 和 UA 模拟用户请求（不稳定、慢）                  |
+| 导出形式                                | HTML, CSV, JSON                                              | 默认仅导出 CSV 基础数据，选择「深度导出」会导出对应链接的 HTML 文件（不含图片）<br />- 讨论：讨论页面<br />- 日志：日志页面<br />- 目录：目录页面<br />- 好友：好友的个人页面 |
+
+---
+
+（以下为主脚本 Bangumi Takeout 的介绍）
 
 
 一系列简单的 Python 脚本，用于从 Bangumi 中导出自己的标注记录（aka 点格子），并转换为方便查看的 HTML 网页或 CSV 表格。
@@ -47,12 +56,12 @@
 
 1. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episodes.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
 2. 运行 `fetch.py`，在打开的认证页面中点击「允许」，正常执行完成后应得到 `takeout.json`
-    
+   
     > 如果出现认证异常可以稍后再试，似乎有概率会撞到 CloudFlare 盾，原因暂时未知。
     >
     > 如有可能，请将之前的 `takeout.json` 放置于同目录下，这样会使用增量方式更新收视进度，能极大提升导出速度。
 3. 根据需要运行 `generate_html.py` 和 `generate_csv.py`，正常执行完成后生成的文件在脚本同目录下
-    
+   
     > `generate_XXX.py` 只使用 `takeout.json` 作为输入，如果已有 JSON，只需要从 JSON 转换成 HTML，则无需运行 `fetch.py`。
 
 ## 工作原理
