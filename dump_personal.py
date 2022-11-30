@@ -388,6 +388,27 @@ def main(user_id="", user_agent="",
         print(f"dumped {len(collected_indexes)} indexes (collected)")
         write_list_dict_to_csv(collected_indexes, "collected_indexes.csv")
 
+    if timeline:
+        print("时间胶囊（这个可能比较慢，建议多等等")
+        fetch_timelines_until_empty_response(timeline_url)
+    
+    if person:
+        print("收藏的现实人物")
+        my_person = parse_rows(common_multi_page_fetch(person_url, person_extract_rows), parse_person_row)
+        print(f"dumped {len(my_person)} my person")
+        write_list_dict_to_csv(my_person, "my_person.csv")
+        
+        print("收藏的虚拟人物")
+        my_characters = parse_rows(common_multi_page_fetch(character_url, person_extract_rows), parse_person_row)
+        print(f"dumped {len(my_characters)} my character")
+        write_list_dict_to_csv(my_characters, "my_characters.csv")
+    
+    if friend:
+        print("好友")
+        my_friends =  parse_rows(common_multi_page_fetch(friend_url, friend_extract_rows), parse_friend_row)
+        print(f"dumped {len(my_friends)} my friend")
+        write_list_dict_to_csv(my_friends, "my_friends.csv")
+
     if deep:
         print("深度导出已启用")
 
@@ -418,37 +439,16 @@ def main(user_id="", user_agent="",
             ids = [t["friend_id"] for t in my_friends]
             save_url_list(urls, ids, "friend")
 
-        if timeline:
-            print("时间胶囊（这个可能比较慢，建议多等等")
-            fetch_timelines_until_empty_response(timeline_url)
-        
-        if person:
-            print("收藏的现实人物")
-            my_person = parse_rows(common_multi_page_fetch(person_url, person_extract_rows), parse_person_row)
-            print(f"dumped {len(my_person)} my person")
-            write_list_dict_to_csv(my_person, "my_person.csv")
-            
-            print("收藏的虚拟人物")
-            my_characters = parse_rows(common_multi_page_fetch(character_url, person_extract_rows), parse_person_row)
-            print(f"dumped {len(my_characters)} my character")
-            write_list_dict_to_csv(my_characters, "my_characters.csv")
-        
-        if friend:
-            print("好友")
-            my_friends =  parse_rows(common_multi_page_fetch(friend_url, friend_extract_rows), parse_friend_row)
-            print(f"dumped {len(my_friends)} my friend")
-            write_list_dict_to_csv(my_friends, "my_friends.csv")
-
     compress_output()
     print("Done.")
 
 def local_test():
-    user_id = ""
-    ua = ""
+    user_id = "317704"
+    ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.0.0"
     main(user_id=user_id, user_agent=ua, 
-         topic=False, reply_topic=False, 
+         topic=False, reply_topic=True, 
          blog=False, created_index=False, 
-         collected_index=False, timeline=False, person=False, friend=True, deep=True)    
+         collected_index=False, timeline=False, person=False, friend=True, deep=False)    
 
 
 def command_line_launch():
@@ -476,5 +476,5 @@ def command_line_launch():
          deep=args.deep)   
 
 if __name__ == "__main__":
-    command_line_launch()
-    # local_test()
+    # command_line_launch()
+    local_test()
