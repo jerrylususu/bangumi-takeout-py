@@ -7,9 +7,9 @@
 |                                         | Bangumi Takeout                                              | Bangumi Takeout More                                         |
 | --------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | 🎉 直接使用 Colab 运行（无需本地部署！） | <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> | <a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_more_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a> |
-| 导出内容                                | 标注记录（点格子）                                           | - 讨论（我发表的、我回复的）<br />- 日志<br />- 目录（我创建的、我收藏的）<br />- 时间胶囊<br />- 收藏的人物（现实、虚拟）<br />- 好友<br /> |
+| 导出内容                                | 标注记录（点格子）n                                          | - 讨论（我发表的、我回复的）<br />- 日志<br />- 目录（我创建的、我收藏的）<br />- 时间胶囊<br />- 收藏的人物（现实、虚拟）<br />- 好友<br /> |
 | 导出机制                                | 基于 Bangumi API（稳定、官方支持）                           | 用 Cookies 和 UA 模拟用户请求（不稳定、慢）                  |
-| 导出形式                                | HTML, CSV, JSON                                              | 默认仅导出 CSV 基础数据，选择「深度导出」会导出对应链接的 HTML 文件（不含图片）<br />- 讨论：讨论页面<br />- 日志：日志页面<br />- 目录：目录页面<br />- 好友：好友的个人页面 |
+| 导出形式                                | HTML, CSV, JSON                                              | 默认仅导出 CSV 基础数据，选择「深度导出」会导出对应链接的 HTML 文件（不含图片）<br />- 讨论：讨论页面<br />- 日志：日志页面<br />- 目录：目录页面<br />- 人物：人物页面<br />- 好友：好友的个人页面 |
 
 ---
 

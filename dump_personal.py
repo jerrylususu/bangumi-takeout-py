@@ -288,9 +288,8 @@ def prepare_folder_structure(topic=True, reply_topic=True,
     if timeline:
         Path("output/html/timeline").mkdir(parents=True,exist_ok=True)
     if person:
-        # 人物信息可以从 Bangumi Archive 匹配到（基于人物 ID），暂时先不保存了
-        # TODO: 从 Bangumi Archive 匹配人物信息
-        pass
+        Path("output/html/person").mkdir(parents=True,exist_ok=True)
+        Path("output/html/character").mkdir(parents=True,exist_ok=True)
     if friend:
         Path("output/html/friend").mkdir(parents=True,exist_ok=True)
 
@@ -434,6 +433,15 @@ def main(user_id="", user_agent="",
             ids = [i["index_id"] for i in collected_indexes]
             save_url_list(urls, ids, "collected_index")
             save_index_list(ids, "collected_index")
+        if person:
+            urls = [i["person_url"] for i in my_person]
+            ids = [i["person_id"] for i in my_person]
+            save_url_list(urls, ids, "person")
+
+            urls = [i["person_url"] for i in my_characters]
+            ids = [i["person_id"] for i in my_characters]
+            save_url_list(urls, ids, "character")
+
         if friend:
             urls = [t["friend_url"] for t in my_friends]
             ids = [t["friend_id"] for t in my_friends]
@@ -443,12 +451,12 @@ def main(user_id="", user_agent="",
     print("Done.")
 
 def local_test():
-    user_id = "317704"
+    user_id = ""
     ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.0.0"
     main(user_id=user_id, user_agent=ua, 
-         topic=False, reply_topic=True, 
+         topic=False, reply_topic=False, 
          blog=False, created_index=False, 
-         collected_index=False, timeline=False, person=False, friend=True, deep=False)    
+         collected_index=False, timeline=False, person=True, friend=False, deep=True)    
 
 
 def command_line_launch():
