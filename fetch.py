@@ -105,7 +105,7 @@ def load_episode_data_remote(item):
 
 def load_episode_data_local(items):
     subject_id_to_episode_map = {item["subject_id"]:{} for item in items}
-    with open("episodes.jsonlines","r",encoding="u8") as f:
+    with open("episode.jsonlines","r",encoding="u8") as f:
         for line in tqdm(f, desc="load episode locally"):
             episode = json.loads(line)
             if episode["subject_id"] in subject_id_to_episode_map.keys():
@@ -154,7 +154,7 @@ def trigger_auth():
 
 
 def load_locally_if_possible(collections):
-    if Path("./subject.jsonlines").exists() and Path("./episodes.jsonlines").exists():
+    if Path("./subject.jsonlines").exists() and Path("./episode.jsonlines").exists():
         logging.info("local data exists, will load from local if possible")
     else:
         logging.info("local data not exists, will load from remote")
