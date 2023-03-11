@@ -1,8 +1,8 @@
 # Bangumi Takeout
 
-# <font color='red'>重要安全警告</font>
+# <span style="color:red">⚠️ 重要安全警告 ⚠️</span>
 
-<font color='red'>⚠️ 如果在 2023/3/7 前使用过 Bangumi Takeout More，请务必阅读！</font>
+<span style="color:red">⚠️ 如果在 **2023/3/7** 前使用过 **Bangumi Takeout More**，请务必阅读！⚠️ </span>
 
 如果你在 2023/3/7 之前使用过 Bangumi Takeout More，你可能已经安装了 Get Cookies.txt 插件。这一插件最近被发现为恶意插件。请尽快遵循以下指引以最小化损失：
 1. 从所有浏览器中移除 Get cookies.txt 扩展（Chrome 系浏览器应该已经通过自动的安全机制移除）
