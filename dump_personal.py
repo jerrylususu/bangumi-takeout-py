@@ -1,5 +1,6 @@
 
-from http.cookiejar import CookieJar, MozillaCookieJar
+from http.cookiejar import CookieJar
+import http.cookies
 import csv
 import time
 from pathlib import Path
@@ -297,7 +298,18 @@ def prepare_folder_structure(topic=True, reply_topic=True,
 def compress_output():
     shutil.make_archive("dump", "zip", "output")
 
-def main(user_id="", user_agent="", 
+
+def build_cookiejar(cookie_str: str):
+    global cookiejar
+    # either the string literal (with start/end quote) or just the text value should work
+    if cookie_str.startswith("'") and cookie_str.endswith("'"):
+        cookie_str = cookie_str.strip("'")
+    simple_cookie = http.cookies.SimpleCookie(cookie_str)
+    cookiejar = requests.cookies.RequestsCookieJar()
+    cookiejar.update(simple_cookie)    
+
+
+def main(user_id="", user_agent="", cookie_str="",
          topic=True, reply_topic=True, 
          blog=True, 
          created_index=True, collected_index=True, 
@@ -306,8 +318,8 @@ def main(user_id="", user_agent="",
          friend=True,
          deep=True):
     global headers, cookiejar
-    cookiejar = MozillaCookieJar("bangumi_cookie.txt")
-    cookiejar.load()
+
+    build_cookiejar(cookie_str)
     headers["User-Agent"] = user_agent
 
     print("here!")
@@ -450,19 +462,22 @@ def main(user_id="", user_agent="",
     compress_output()
     print("Done.")
 
+
 def local_test():
     user_id = ""
-    ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.0.0"
-    main(user_id=user_id, user_agent=ua, 
-         topic=False, reply_topic=False, 
+    ua = ""
+    cookie_str = ""
+    main(user_id=user_id, user_agent=ua, cookie_str=cookie_str,
+         topic=True, reply_topic=False, 
          blog=False, created_index=False, 
-         collected_index=False, timeline=True, person=False, friend=False, deep=False)    
+         collected_index=False, timeline=False, person=False, friend=False, deep=False)    
 
 
 def command_line_launch():
     parser = argparse.ArgumentParser()
     parser.add_argument("--user_id", help="not username")
     parser.add_argument("--user_agent", help="Browser's User Agent String")
+    parser.add_argument("--cookie_str", help="document.cookie")
     parser.add_argument("--deep", help="also fetch HTML and JSON, not just the list")
     parser.add_argument("--topic", help="我发表的讨论", action="store_true")
     parser.add_argument("--reply_topic", help="我回复的讨论", action="store_true")
@@ -474,7 +489,7 @@ def command_line_launch():
     parser.add_argument("--friend", help="我的好友", action="store_true")
     
     args = parser.parse_args()
-    main(user_id=args.user_id, user_agent=args.user_agent, 
+    main(user_id=args.user_id, user_agent=args.user_agent, cookie_str=args.cookie_str,
          topic=args.topic, reply_topic=args.reply_topic, 
          blog=args.blog, 
          created_index=args.created_index, collected_index=args.collected_index, 
