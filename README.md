@@ -34,7 +34,8 @@
 ## 环境
 需要 Python 3.6 或以上版本，并需要安装 `requests` 和 `tqdm` 两个依赖。
 
-[PDM](https://pdm.fming.dev/) 用户可以使用 `pdm sync` 安装依赖。 
+- 直接用 pip 安装依赖： `pip install -r requirements.txt`
+- [PDM](https://pdm.fming.dev/) 用户可以使用 `pdm sync` 安装依赖。 
 
 ## 数据源
 本脚本支持两种数据源：在线 [Bangumi API](https://bangumi.github.io/api/#/) 或 本地 [Bangumi Archive](https://github.com/bangumi/Archive)。
