@@ -1,5 +1,19 @@
 # Bangumi Takeout
 
+# <font color='red'>重要安全警告</font>
+
+<font color='red'>⚠️ 如果在 2023/3/7 前使用过 Bangumi Takeout More，请务必阅读！</font>
+
+如果你在 2023/3/7 之前使用过 Bangumi Takeout More，你可能已经安装了 Get Cookies.txt 插件。这一插件最近被发现为恶意插件。请尽快遵循以下指引以最小化损失：
+1. 从所有浏览器中移除 Get cookies.txt 扩展（Chrome 系浏览器应该已经通过自动的安全机制移除）
+2. 强烈建议：清除浏览器的所有 cookies，并重新登录所有网站。（Chrome 系：设置-隐私和安全性-清除浏览数据-勾选清除 cookies）最坏情况应该假设所有 cookies 都已泄漏。绝大部分网站在重新登录后会生成新的 cookies，从而将之前的 cookies 废弃。
+
+[Bangumi 上的相关讨论](https://bgm.tv/group/topic/378915)
+
+目前（2023/3/11），Bangumi Takeout More 已将 Cookie 导出方式由使用插件更换为用户手动在控制台执行指令，未来不会再出现类似的插件导致的安全问题。此后本项目在引入第三方依赖时会更加谨慎。也欢迎各位用户在发现安全问题时及时告知，创建 Issue、站内回帖或站内信均可，我会尽快处理。
+
+（Bangumi Takeout 使用 Bangumi API 实现，不受此次事件的影响。）
+
 ## TLDR
 
 再见了，谢谢所有的鱼 🐟
