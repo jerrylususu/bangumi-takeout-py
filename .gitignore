@@ -2,5 +2,7 @@
 .vscode/
 __pycache__/
 __pypackages__/
+output/
 
 *.jsonlines
+dump.zip
