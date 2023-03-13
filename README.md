@@ -5,8 +5,13 @@
 <span style="color:red">⚠️ 如果在 **2023/3/7** 前使用过 **Bangumi Takeout More**，请务必阅读！⚠️ </span>
 
 如果你在 2023/3/7 之前使用过 Bangumi Takeout More，你可能已经安装了 Get Cookies.txt 插件。这一插件最近被发现为恶意插件。请尽快遵循以下指引以最小化损失：
-1. 从所有浏览器中移除 Get cookies.txt 扩展（Chrome 系浏览器应该已经通过自动的安全机制移除）
-2. 强烈建议：清除浏览器的所有 cookies，并重新登录所有网站。（Chrome 系：设置-隐私和安全性-清除浏览数据-勾选清除 cookies）最坏情况应该假设所有 cookies 都已泄漏。绝大部分网站在重新登录后会生成新的 cookies，从而将之前的 cookies 废弃。
+1. 首先，卸载扩展；
+2. 有些网站会显示已登录设备，并提供注销的选择，你可以在那个页面注销已登录设备；
+    - Google: 管理您的 Google 账号 - 安全性 - 管理所有设备
+    - Github: Settings - Assess - Sessions
+    - Microsoft: 我的 Microsoft 账户 - 安全 - 登录活动
+3. 最有效的防御手段是：浏览你的 cookie 列表，依次打开网站，主动点击注销按钮，网站会收到你的注销请求然后吊销该 cookie，保证开发者拥有无效数据；
+4. 最后的最后，如果还不放心，请修改密码，部分网站在修改密码后会吊销所有 cookie。
 
 [Bangumi 上的相关讨论](https://bgm.tv/group/topic/378915)
 
