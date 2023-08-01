@@ -1,0 +1,40 @@
+name: Backup Bangumi Data
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"  # 运行时间：每周一凌晨四点
+  workflow_dispatch:  # 也支持手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: (Step 1) Fetch
+        run: python fetch.py
+
+      - name: (Step 2) Build HTML
+        run: python generate_html.py
+      
+      - name: (Step 3) Build CSV
+        run: python generate_csv.py
+
+      - name: Upload output file
+        uses: actions/upload-artifact@v2
+        with:
+          name: Output
+          path: |
+            takeout.json
+            takeout.html
+            takeout.csv

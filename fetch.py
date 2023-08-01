@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 import logging
+import os
 
 import requests
 from tqdm import tqdm
@@ -17,6 +18,10 @@ API_SERVER = "https://api.bgm.tv"
 LOAD_WAIT_MS = 5000
 USERNAME_OR_UID = ""
 ACCESS_TOKEN = ""
+IN_GITHUB_WORKFLOW = False
+
+if os.environ.get('GITHUB_ACTIONS') == 'true':
+    IN_GITHUB_WORKFLOW = True
 
 def get_json_with_bearer_token(url):
     time.sleep(LOAD_WAIT_MS/1000)
@@ -134,6 +139,14 @@ def load_user():
     return user_data
 
 def trigger_auth():
+    global ACCESS_TOKEN
+
+    if IN_GITHUB_WORKFLOW:
+        logging.info("in Github workflow, reading from secrets")
+        ACCESS_TOKEN = os.environ['BANGUMI_ACCESS_TOKEN']
+        return
+
+
     if Path("./no_gui").exists():
         logging.info("no gui, skipping oauth")
     else:
@@ -142,7 +155,6 @@ def trigger_auth():
     if not Path("./.bgm_token").exists():
         raise Exception("no access token (auth failed?)")
 
-    global ACCESS_TOKEN
     with open("./.bgm_token", "r", encoding="u8") as f:
         tokens = json.load(f)
         ACCESS_TOKEN = tokens["access_token"]
