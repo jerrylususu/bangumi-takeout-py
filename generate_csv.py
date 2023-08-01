@@ -133,7 +133,7 @@ def main(offset_hours=None):
 
     items = [build_row_dict(item) for item in data]
 
-    with open(csv_file_name, "w", encoding="gbk", newline="", errors="ignore") as f:
+    with open(csv_file_name, "w", encoding="utf-8-sig", newline="", errors="ignore") as f:
         writer = csv.DictWriter(f, fieldnames=items[0].keys())
         writer.writeheader()
         for item in items:

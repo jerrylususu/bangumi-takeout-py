@@ -91,7 +91,8 @@
 2. 打开新 fork 的项目主页，找到 Settings - Secrets and variables - Actions
 3. 点击右侧 New repository secret， Secret Name 填入 `BANGUMI_ACCESS_TOKEN`，内容填入从[Bangumi OAuth Demo](https://api.bgm.tv/v0/oauth/redirect)获得的 token。（申请时请注意根据需要选择有效期）
 4. （可选）如果需要自动定期执行，编辑 `.github/workflows/backup.yml`，解除第 6 和 7 行的注释。请尽量修改定时执行的时间，以避免多账户同时导出造成的服务器高负载影响其他用户。
-5. 回到项目主页，找到 Actions - Backup Bangumi Data，点击右侧 Run workflow 执行。
+5. 回到项目主页，找到 Actions - Backup Bangumi Data，点击右侧 Run workflow 运行。
+6. 运行完成后，在 Actions - Backup Bangumi Data 右侧列表中点击某次运行，在 Summary - Artifact 中即可下载到本次的存档。
 
 
 ## 工作原理
