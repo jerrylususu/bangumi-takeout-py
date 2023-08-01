@@ -1,6 +1,8 @@
 import time
 import datetime
 from math import isclose
+import requests
+import os
 
 # 写入进度信息（用于完成度计算）
 def write_progress_info(item):
@@ -96,3 +98,23 @@ def combine_ep_and_progress(item):
     remove_response_of_invalid_request(item)
     build_ep_id_to_addr_map(item)
     rebuild_ep_type_list_for_music(item)
+
+def get_newest_archive():
+    url = f"https://api.github.com/repos/bangumi/Archive/releases/tags/archive"
+    response = requests.get(url)
+    release = response.json()
+
+    # Find the asset with the newest date
+    newest_asset = max(release["assets"], key=lambda asset: asset["created_at"])
+
+    # Print the asset name and download URL
+    asset_name = newest_asset["name"]
+    asset_download_url = newest_asset["browser_download_url"]
+    return asset_download_url
+
+def env_in_github_workflow():
+    return os.environ.get('GITHUB_ACTIONS') == 'true'
+
+
+if env_in_github_workflow():
+    print(get_newest_archive())

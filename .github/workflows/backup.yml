@@ -26,7 +26,7 @@ jobs:
 
       - name: Download and extract archive data
         run: |
-          wget https://github.com/bangumi/Archive/releases/download/archive/dump.zip
+          wget $(python utils.py) -O dump.zip --quiet
           unzip dump.zip
 
       - name: Set up environment variables

@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from auth import do_auth
 from mapping import ep_type
+from utils import env_in_github_workflow
 
 
 logging.basicConfig(level=logging.INFO)
@@ -18,10 +19,8 @@ API_SERVER = "https://api.bgm.tv"
 LOAD_WAIT_MS = 5000
 USERNAME_OR_UID = ""
 ACCESS_TOKEN = ""
-IN_GITHUB_WORKFLOW = False
+IN_GITHUB_WORKFLOW = env_in_github_workflow()
 
-if os.environ.get('GITHUB_ACTIONS') == 'true':
-    IN_GITHUB_WORKFLOW = True
 
 def get_json_with_bearer_token(url):
     time.sleep(LOAD_WAIT_MS/1000)
