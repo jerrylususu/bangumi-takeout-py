@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Set up environment variables
+        run: echo "BANGUMI_ACCESS_TOKEN=${{ secrets.BANGUMI_ACCESS_TOKEN }}" >> $GITHUB_ENV
+
       - name: (Step 1) Fetch
         run: python fetch.py
 
