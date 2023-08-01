@@ -1,8 +1,11 @@
 name: Backup Bangumi Data
 
 on:
-  schedule:
-    - cron: "0 4 * * 1"  # 运行时间：每周一凌晨四点
+  # 注释：如果要定时执行，请解除以下部分的注释（删除掉行首的 # 即可）
+  # ----- 解除这行之后的注释（不包括这行）-----
+  # schedule:
+  #   - cron: "0 4 * * 1"  # 运行时间：每周一凌晨四点
+  # ----- 解除这行之前的注释（不包括这行）-----
   workflow_dispatch:  # 也支持手动触发
 
 jobs:
@@ -20,6 +23,11 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Download and extract archive data
+        run: |
+          wget https://github.com/bangumi/Archive/releases/download/archive/dump.zip
+          unzip dump.zip
 
       - name: Set up environment variables
         run: echo "BANGUMI_ACCESS_TOKEN=${{ secrets.BANGUMI_ACCESS_TOKEN }}" >> $GITHUB_ENV

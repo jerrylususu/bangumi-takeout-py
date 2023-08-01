@@ -71,9 +71,11 @@
 
 ## 使用
 
+### 在 Colab 上执行
 🎉 现已支持直接用 Colab 运行：<a href="https://colab.research.google.com/github/jerrylususu/bangumi-takeout-py/blob/master/bangumi_takeout_colab.ipynb" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="用 Colab 运行"/></a>
 
 
+### 在本地运行
 1. （如果使用本地源）下载数据：从 [Archive Release](https://github.com/bangumi/Archive/releases/tag/archive) 下载最新的 `dump.zip`，将其中 `episode.jsonlines` 和 `subject.jsonlines` 两个文件解压到脚本所在目录下
 2. 运行 `fetch.py`，在打开的认证页面中点击「允许」，正常执行完成后应得到 `takeout.json`
    
@@ -83,6 +85,14 @@
 3. 根据需要运行 `generate_html.py` 和 `generate_csv.py`，正常执行完成后生成的文件在脚本同目录下
    
     > `generate_XXX.py` 只使用 `takeout.json` 作为输入，如果已有 JSON，只需要从 JSON 转换成 HTML，则无需运行 `fetch.py`。
+
+### 使用 Github Actions 执行
+1. fork 本仓库到自己的名下
+2. 打开新 fork 的项目主页，找到 Settings - Secrets and variables - Actions
+3. 点击右侧 New repository secret， Secret Name 填入 `BANGUMI_ACCESS_TOKEN`，内容填入从[Bangumi OAuth Demo](https://api.bgm.tv/v0/oauth/redirect)获得的 token。（申请时请注意根据需要选择有效期）
+4. （可选）如果需要自动定期执行，编辑 `.github/workflows/backup.yml`，解除第 6 和 7 行的注释。请尽量修改定时执行的时间，以避免多账户同时导出造成的服务器高负载影响其他用户。
+5. 回到项目主页，找到 Actions - Backup Bangumi Data，点击右侧 Run workflow 执行。
+
 
 ## 工作原理
 先获取用户自身 uid/username，然后获取全部收藏，最后对每个条目逐个获取条目详情、条目内分集（如有）和个人标注进度。
