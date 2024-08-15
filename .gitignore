@@ -6,3 +6,7 @@ output/
 
 *.jsonlines
 dump.zip
+.pdm-python
+.bgm_token
+*.json
+no_gui
