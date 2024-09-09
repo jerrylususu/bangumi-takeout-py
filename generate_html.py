@@ -78,11 +78,11 @@ $(function () {
         if (!selectedType || selectedType === '') {
             matchType = true; // No filter, show all
         } else if (selectedType === '想看') {
-            matchType = type.includes('想看') || type.includes('想读') || type.includes('想玩');
+            matchType = type.includes('想看') || type.includes('想读') || type.includes('想玩') || type.includes('想听');
         } else if (selectedType === '看过') {
-            matchType = type.includes('看过') || type.includes('读过') || type.includes('玩过');
+            matchType = type.includes('看过') || type.includes('读过') || type.includes('玩过') || type.includes('听过');
         } else if (selectedType === '在看') {
-            matchType = type.includes('在看') || type.includes('在读') || type.includes('在玩');
+            matchType = type.includes('在看') || type.includes('在读') || type.includes('在玩') || type.includes('在听');
         } else if (selectedType === '搁置') {
             matchType = type.includes('搁置')
         } else if (selectedType === '抛弃') {
