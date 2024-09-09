@@ -39,10 +39,10 @@ html_end = """
 
   <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M//jquery/3.6.0/jquery.min.js"></script>
   <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M//twitter-bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
-  <script>
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
+<script>
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+
     $('#toggle-all-collapse').click(function () {
         const firstBody = document.querySelector('.card-body')
         if (firstBody.classList.contains('collapse')) {
@@ -57,7 +57,64 @@ html_end = """
             })
         }
     });
-  </script>
+
+    $('#search-input, #filter-type').on('input change', function () {
+        applyFilter();
+    });
+
+    function applyFilter() {
+    const searchText = $('#search-input').val().toLowerCase()
+    const selectedType = $('.filter-button.active').data('filter')
+
+    $('.card').each(function () {
+        const card = $(this)
+        const title = card.find('.card-title').text().toLowerCase()
+        const type = card.find('.card-header span').text().toLowerCase()
+
+        const trimmedSearchText = searchText.trim()
+        const matchTitle = trimmedSearchText === '' || title.includes(trimmedSearchText)
+
+        let matchType = false
+        if (!selectedType || selectedType === '') {
+            matchType = true; // No filter, show all
+        } else if (selectedType === '想看') {
+            matchType = type.includes('想看') || type.includes('想读') || type.includes('想玩');
+        } else if (selectedType === '看过') {
+            matchType = type.includes('看过') || type.includes('读过') || type.includes('玩过');
+        } else if (selectedType === '在看') {
+            matchType = type.includes('在看') || type.includes('在读') || type.includes('在玩');
+        } else if (selectedType === '搁置') {
+            matchType = type.includes('搁置')
+        } else if (selectedType === '抛弃') {
+            matchType = type.includes('抛弃')
+        }
+
+        if (matchTitle && matchType) {
+            card.show()
+        } else {
+            card.hide()
+        }
+    });
+}
+
+$('.filter-button').on('click', function () {
+    $('.filter-button').removeClass('active')
+    $(this).addClass('active')
+    applyFilter();
+});
+
+    // Populate filter type options
+    const filterTypeSelect = $('#filter-type');
+    const types = new Set();
+    $('.card-header span').each(function () {
+        const type = $(this).text().trim().toLowerCase();
+        types.add(type);
+    });
+    types.forEach(type => {
+        filterTypeSelect.append(`<option value="${type}">${type}</option>`);
+    });
+});
+</script>
 </body>
 
 </html>"""
@@ -65,10 +122,16 @@ html_end = """
 
 html_header = """<h1>Bangumi Takeout</h1>
     <p>使用 <a href="https://github.com/jerrylususu/bangumi-takeout-py" target="_blank">Bangumi Takeout</a> 为用户 <a href="https://bgm.tv/user/{user_id}" target="_blank">{username}</a> 于 {generated_at} 生成</p>
+    <form id="filter-form" class="mb-3">
+        <div class="form-group">
+            <label for="search-input">搜索：</label>
+            <input type="text" id="search-input" class="form-control" placeholder="输入关键字搜索...">
+        </div>
+    </form>
     <p class="extra-line-height">类型统计：
       {html_type_summary}
     </p>
-    <p class="extra-line-height">状态统计： 
+    <p class="extra-line-height">状态筛选： 
       {html_status_summary}
     </p>
     <p class="extra-line-height">分集图例：
@@ -79,11 +142,11 @@ html_header = """<h1>Bangumi Takeout</h1>
 """
 
 html_summary_button = """
-      <button type="button" class="btn btn-{color}"> {name} <span class="badge badge-light">{count}</span></button>
+      <button type="button" class="btn btn-{color} filter-button" data-filter="{name}"> {name} <span class="badge badge-light">{count}</span></button>
 """
 
 html_ep_status_example = """
-<a href="#" class="btn btn-{color} btn-sm">{name}</a>
+<a href="#" class="btn btn-{color} btn-sm filter-button" data-filter="{name}">{name}</a>
 """
 
 html_card = """
@@ -156,12 +219,10 @@ def build_summary(type_name_to_list_map, name_map, color_map):
         summary_html += html_summary_button.format(name=name_map[type_key], count=len(li), color=color_map[type_key])
     return summary_html
 
-
-
 def build_ep_status_example():
     html = ""
     for status_key, status_name in mapping.ep_status.items():
-        html += html_ep_status_example.format(color=mapping.ep_color[status_key], name=mapping.ep_status[status_key])
+        html += html_ep_status_example.format(color=mapping.ep_color[status_key], name=status_name)
     return html
 
 def build_header(meta, data):
@@ -170,8 +231,9 @@ def build_header(meta, data):
 
     type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color)
     status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color)
+    type_options = ''.join([f'<option value="{type_key}">{type_name}</option>' for type_key, type_name in mapping.subject_type.items()])
     html = html_header.format(generated_at=generated_at_str, html_type_summary=type_summary, html_status_summary=status_summary,
-        user_id=meta["user"]["id"], username=meta["user"]["nickname"], html_ep_status_example=build_ep_status_example())
+        user_id=meta["user"]["id"], username=meta["user"]["nickname"], html_ep_status_example=build_ep_status_example(), type_options=type_options)
     return html
 
 
