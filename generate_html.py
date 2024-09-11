@@ -56,64 +56,111 @@ $(function () {
                 it.classList.add('collapse')
             })
         }
-    });
+    })
 
     $('#search-input, #filter-type').on('input change', function () {
-        applyFilter();
-    });
+        applyFilter()
+    })
 
     function applyFilter() {
-    const searchText = $('#search-input').val().toLowerCase()
-    const selectedType = $('.filter-button.active').data('filter')
+        const searchText = $('#search-input').val().toLowerCase().trim()
+        const selectedType = $('.filter-button-type.active').data('filter')
+        const selectedStatus = $('.filter-button-status.active').data('filter')
 
-    $('.card').each(function () {
-        const card = $(this)
-        const title = card.find('.card-title').text().toLowerCase()
-        const type = card.find('.card-header span').text().toLowerCase()
+        const searchType = $('input[name="search-type"]:checked').val()
 
-        const trimmedSearchText = searchText.trim()
-        const matchTitle = trimmedSearchText === '' || title.includes(trimmedSearchText)
+        const currentTypeText = selectedType 
+            ? $('.filter-button-type.active').contents().filter(function() {
+                return this.nodeType === 3
+            }).text().trim()
+            : '全部类型'
 
-        let matchType = false
-        if (!selectedType || selectedType === '') {
-            matchType = true; // No filter, show all
-        } else if (selectedType === '想看') {
-            matchType = type.includes('想看') || type.includes('想读') || type.includes('想玩') || type.includes('想听');
-        } else if (selectedType === '看过') {
-            matchType = type.includes('看过') || type.includes('读过') || type.includes('玩过') || type.includes('听过');
-        } else if (selectedType === '在看') {
-            matchType = type.includes('在看') || type.includes('在读') || type.includes('在玩') || type.includes('在听');
-        } else if (selectedType === '搁置') {
-            matchType = type.includes('搁置')
-        } else if (selectedType === '抛弃') {
-            matchType = type.includes('抛弃')
-        }
+        const currentStatusText = selectedStatus 
+            ? $('.filter-button-status.active').contents().filter(function() {
+                return this.nodeType === 3
+            }).text().trim()
+            : '全部状态'
 
-        if (matchTitle && matchType) {
-            card.show()
+        $('#current-type').text(currentTypeText)
+        $('#current-status').text(currentStatusText)
+
+        $('.card').each(function () {
+            const card = $(this)
+            const title = card.find('.card-title').text().toLowerCase()
+
+            const comment = card.find("dt:contains('我的评论')").next('dd').text().toLowerCase()
+
+            const tags = card.find("span.badge.badge-pill.badge-primary").map(function() {
+                return $(this).text().toLowerCase()
+            }).get().join(" ")
+
+            const subjectType = card.data('subject-type')
+            const type = card.find('.card-header span').text().toLowerCase()
+
+            let matchText = false
+
+            if (searchType === 'title') {
+                matchText = searchText === '' || title.includes(searchText)
+            } else if (searchType === 'comment') {
+                matchText = searchText === '' || comment.includes(searchText)
+            } else if (searchType === 'tags') {
+                matchText = searchText === '' || tags.includes(searchText)
+            }
+
+            let matchType = !selectedType || selectedType === '' || subjectType == selectedType
+            let matchStatus = !selectedStatus || selectedStatus === '' || type.includes(selectedStatus)
+
+            if (matchText && matchType && matchStatus) {
+                card.show()
+            } else {
+                card.hide()
+            }
+        })
+    }
+
+    $('#search-input, #filter-type, #filter-status').on('input change', function () {
+        applyFilter()
+    })
+
+    $('input[name="search-type"]').on('change', function () {
+        applyFilter()
+    })
+
+    $('.filter-button-type').on('click', function() {
+        if ($(this).hasClass('active')) {
+            $(this).removeClass('active')
         } else {
-            card.hide()
+            $('.filter-button-type').removeClass('active')
+            $(this).addClass('active')
         }
-    });
-}
 
-$('.filter-button').on('click', function () {
-    $('.filter-button').removeClass('active')
-    $(this).addClass('active')
-    applyFilter();
-});
+        applyFilter()
+    })
+
+    $('.filter-button-status').on('click', function() {
+        if ($(this).hasClass('active')) {
+            $(this).removeClass('active')
+        } else {
+            $('.filter-button-status').removeClass('active')
+            $(this).addClass('active')
+        }
+
+        applyFilter()
+    })
+
+
 
     // Populate filter type options
-    const filterTypeSelect = $('#filter-type');
-    const types = new Set();
+    const filterTypeSelect = $('#filter-type')
+    const types = new Set()
     $('.card-header span').each(function () {
-        const type = $(this).text().trim().toLowerCase();
-        types.add(type);
-    });
+        const type = $(this).text().trim().toLowerCase()
+        types.add(type)
+    })
     types.forEach(type => {
-        filterTypeSelect.append(`<option value="${type}">${type}</option>`);
-    });
-});
+        filterTypeSelect.append(`<option value="${type}">${type}</option>`)
+    })
+})
 </script>
 </body>
 
@@ -122,12 +169,6 @@ $('.filter-button').on('click', function () {
 
 html_header = """<h1>Bangumi Takeout</h1>
     <p>使用 <a href="https://github.com/jerrylususu/bangumi-takeout-py" target="_blank">Bangumi Takeout</a> 为用户 <a href="https://bgm.tv/user/{user_id}" target="_blank">{username}</a> 于 {generated_at} 生成</p>
-    <form id="filter-form" class="mb-3">
-        <div class="form-group">
-            <label for="search-input">搜索：</label>
-            <input type="text" id="search-input" class="form-control" placeholder="输入关键字搜索...">
-        </div>
-    </form>
     <p class="extra-line-height">类型统计：
       {html_type_summary}
     </p>
@@ -137,20 +178,44 @@ html_header = """<h1>Bangumi Takeout</h1>
     <p class="extra-line-height">分集图例：
       {html_ep_status_example}
     </p>
+        <div>
+        当前筛选条件：<span id="current-type">全部类型</span>，<span id="current-status">全部状态</span>
+    </div>
+    <form id="filter-form" class="mb-3">
+    <div class="form-group">
+        <label for="search-input">搜索：</label>
+                <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="search-type" id="search-title" value="title" checked>
+            <label class="form-check-label" for="search-title">标题</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="search-type" id="search-comment" value="comment">
+            <label class="form-check-label" for="search-comment">评论</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="search-type" id="search-tags" value="tags">
+            <label class="form-check-label" for="search-tags">标签</label>
+        </div>
+        <input type="text" id="search-input"  placeholder="输入关键字搜索...">
+    </div>
+</form>
     <button type="button" class="btn btn-outline-secondary" id="toggle-all-collapse"> 全部展开/收起 </button>
     <hr>
 """
 
-html_summary_button = """
-      <button type="button" class="btn btn-{color} filter-button" data-filter="{name}"> {name} <span class="badge badge-light">{count}</span></button>
+html_summary_button_type = """
+      <button type="button" class="btn btn-{color} filter-button-type" data-filter="{subject_type}"> {name} <span class="badge badge-light">{count}</span></button>
 """
 
+html_summary_button_status = """
+      <button type="button" class="btn btn-{color} filter-button-status" data-filter="{name}"> {name} <span class="badge badge-light">{count}</span></button>
+"""
 html_ep_status_example = """
 <a href="#" class="btn btn-{color} btn-sm filter-button" data-filter="{name}">{name}</a>
 """
 
 html_card = """
-    <div class="card mb-2">
+    <div class="card mb-2" data-subject-type="{subject_type}">
       <div class="card-header" data-toggle="collapse" href="#card-body-subject-{subject_id}" aria-expanded="true" aria-controls="test-block" >
         {name_cn} <span class="badge badge-{subject_status_color}">{subject_status_str}</span>
       </div>
@@ -189,8 +254,6 @@ html_card = """
           </dd>
         </dl>
 
-
-
       </div>
     </div>
 """
@@ -213,10 +276,13 @@ def load_takeout_json():
     return takeout_data["meta"], takeout_data["data"]
 
 
-def build_summary(type_name_to_list_map, name_map, color_map):
+def build_summary(type_name_to_list_map, name_map, color_map, is_type=True):
     summary_html = ""
     for type_key, li in type_name_to_list_map.items():
-        summary_html += html_summary_button.format(name=name_map[type_key], count=len(li), color=color_map[type_key])
+        if is_type:
+            summary_html += html_summary_button_type.format(subject_type=type_key, name=name_map[type_key], count=len(li), color=color_map[type_key])
+        else:
+            summary_html += html_summary_button_status.format(name=name_map[type_key], count=len(li), color=color_map[type_key])
     return summary_html
 
 def build_ep_status_example():
@@ -227,10 +293,11 @@ def build_ep_status_example():
 
 def build_header(meta, data):
     generated_at_timestamp = meta["generated_at"]
-    generated_at_str = utils.datetime_from_utc_with_offset(datetime.datetime.utcfromtimestamp(int(generated_at_timestamp)), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
+    generated_at_str = utils.datetime_from_utc_with_offset(
+        datetime.datetime.utcfromtimestamp(int(generated_at_timestamp)), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
 
-    type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color)
-    status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color)
+    type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color, is_type=True)
+    status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color, is_type=False)
     type_options = ''.join([f'<option value="{type_key}">{type_name}</option>' for type_key, type_name in mapping.subject_type.items()])
     html = html_header.format(generated_at=generated_at_str, html_type_summary=type_summary, html_status_summary=status_summary,
         user_id=meta["user"]["id"], username=meta["user"]["nickname"], html_ep_status_example=build_ep_status_example(), type_options=type_options)
