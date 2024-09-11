@@ -85,7 +85,7 @@
 ## 可能的下一步
 > 欢迎 PR！
 - [ ] 完全用前端实现（需要前端大触）
-- [x] 支持筛选和搜索（感谢 @Tsuiokuyo 的贡献，见 PR#20 ）
+- [x] 支持筛选和搜索（感谢 @Tsuiokuyo 的贡献，见 [PR #20](https://github.com/jerrylususu/bangumi-takeout-py/pull/20) ）
 - [x] 正确使用 Bangumi 的 OAuth 认证，而不是手动填 Access Token
 - [x] 使用 [Bangumi/Archive](https://github.com/bangumi/Archive) 作为本地数据源
 - [ ] 写个简单的 GUI 界面
