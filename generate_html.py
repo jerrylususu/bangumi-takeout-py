@@ -62,6 +62,83 @@ $(function () {
         applyFilter()
     })
 
+    $('.filter-button-type').on('click', function() {
+        if ($(this).hasClass('active')) {
+            $(this).removeClass('active')
+        } else {
+            $('.filter-button-type').removeClass('active')
+            $(this).addClass('active')
+        }
+        updateStatusCounts()
+        applyFilter()
+    })
+
+    $('.filter-button-status').on('click', function() {
+        if ($(this).hasClass('active')) {
+            $(this).removeClass('active')
+        } else {
+            $('.filter-button-status').removeClass('active')
+            $(this).addClass('active')
+        }
+        applyFilter()
+    })
+
+    $('input[name="search-type"]').on('change', function () {
+        applyFilter()
+    })
+    applyFilter()
+
+    // Populate filter type options
+    const filterTypeSelect = $('#filter-type')
+    const types = new Set()
+    $('.card-header span').each(function () {
+        const type = $(this).text().trim().toLowerCase()
+        types.add(type)
+    })
+    types.forEach(type => {
+        filterTypeSelect.append(`<option value="${type}">${type}</option>`)
+    })
+
+    function updateStatusCounts() {
+        const selectedType = $('.filter-button-type.active').data('filter')
+        const itemsByStatus = {}
+
+        $('.card').each(function () {
+            const card = $(this)
+            const subjectType = card.data('subject-type')
+            const type = card.find('.card-header span').text().toLowerCase()
+
+            if (!selectedType || selectedType === subjectType) {
+                const status = getStatus(type)
+                if (!itemsByStatus[status]) {
+                    itemsByStatus[status] = 0
+                }
+                itemsByStatus[status]++
+            }
+        })
+
+        $('.filter-button-status').each(function () {
+            const status = $(this).data('filter')
+            const count = itemsByStatus[status] || 0
+            $(this).find('.badge').text(count)
+        })
+    }
+
+    function getStatus(type) {
+        if (type.includes('想看') || type.includes('想读') || type.includes('想玩') || type.includes('想听')) {
+            return '想看'
+        } else if (type.includes('看过') || type.includes('读过') || type.includes('玩过') || type.includes('听过')) {
+            return '看过'
+        } else if (type.includes('在看') || type.includes('在读') || type.includes('在玩') || type.includes('在听')) {
+            return '在看'
+        } else if (type.includes('搁置')) {
+            return '搁置'
+        } else if (type.includes('抛弃')) {
+            return '抛弃'
+        }
+        return ''
+    }
+
     function applyFilter() {
         const searchText = $('#search-input').val().toLowerCase().trim()
         const selectedType = $('.filter-button-type.active').data('filter')
@@ -107,8 +184,22 @@ $(function () {
                 matchText = searchText === '' || tags.includes(searchText)
             }
 
+            let matchStatus = false
+            if (!selectedStatus || selectedStatus === '') {
+                matchStatus = true // 未选择状态，显示全部
+            } else if (selectedStatus === '想看') {
+                matchStatus = type.includes('想看') || type.includes('想读') || type.includes('想玩') || type.includes('想听')
+            } else if (selectedStatus === '看过') {
+                matchStatus = type.includes('看过') || type.includes('读过') || type.includes('玩过') || type.includes('听过')
+            } else if (selectedStatus === '在看') {
+                matchStatus = type.includes('在看') || type.includes('在读') || type.includes('在玩') || type.includes('在听')
+            } else if (selectedStatus === '搁置') {
+                matchStatus = type.includes('搁置')
+            } else if (selectedStatus === '抛弃') {
+                matchStatus = type.includes('抛弃')
+            }
+
             let matchType = !selectedType || selectedType === '' || subjectType == selectedType
-            let matchStatus = !selectedStatus || selectedStatus === '' || type.includes(selectedStatus)
 
             if (matchText && matchType && matchStatus) {
                 card.show()
@@ -117,51 +208,10 @@ $(function () {
             }
         })
     }
-
-    $('#search-input, #filter-type, #filter-status').on('input change', function () {
-        applyFilter()
-    })
-
-    $('input[name="search-type"]').on('change', function () {
-        applyFilter()
-    })
-
-    $('.filter-button-type').on('click', function() {
-        if ($(this).hasClass('active')) {
-            $(this).removeClass('active')
-        } else {
-            $('.filter-button-type').removeClass('active')
-            $(this).addClass('active')
-        }
-
-        applyFilter()
-    })
-
-    $('.filter-button-status').on('click', function() {
-        if ($(this).hasClass('active')) {
-            $(this).removeClass('active')
-        } else {
-            $('.filter-button-status').removeClass('active')
-            $(this).addClass('active')
-        }
-
-        applyFilter()
-    })
-
-
-
-    // Populate filter type options
-    const filterTypeSelect = $('#filter-type')
-    const types = new Set()
-    $('.card-header span').each(function () {
-        const type = $(this).text().trim().toLowerCase()
-        types.add(type)
-    })
-    types.forEach(type => {
-        filterTypeSelect.append(`<option value="${type}">${type}</option>`)
-    })
 })
 </script>
+
+
 </body>
 
 </html>"""
@@ -169,7 +219,7 @@ $(function () {
 
 html_header = """<h1>Bangumi Takeout</h1>
     <p>使用 <a href="https://github.com/jerrylususu/bangumi-takeout-py" target="_blank">Bangumi Takeout</a> 为用户 <a href="https://bgm.tv/user/{user_id}" target="_blank">{username}</a> 于 {generated_at} 生成</p>
-    <p class="extra-line-height">类型统计：
+    <p class="extra-line-height">类型筛选：
       {html_type_summary}
     </p>
     <p class="extra-line-height">状态筛选： 
