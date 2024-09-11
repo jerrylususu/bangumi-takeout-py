@@ -1,27 +1,7 @@
-# Bangumi Takeout
+# Bangumi Takeout (More)
 
-# <span style="color:red">⚠️ 重要安全警告 ⚠️</span>
-
-<span style="color:red">⚠️ 如果在 **2023/3/7** 前使用过 **Bangumi Takeout More**，请务必阅读！⚠️ </span>
-
-如果你在 2023/3/7 之前使用过 Bangumi Takeout More，你可能已经安装了 Get Cookies.txt 插件。这一插件最近被发现为恶意插件。请尽快遵循以下指引以最小化损失：
-1. 首先，卸载扩展；
-2. 有些网站会显示已登录设备，并提供注销的选择，你可以在那个页面注销已登录设备；
-    - Google: 管理您的 Google 账号 - 安全性 - 管理所有设备
-    - Github: Settings - Assess - Sessions
-    - Microsoft: 我的 Microsoft 账户 - 安全 - 登录活动
-3. 最有效的防御手段是：浏览你的 cookie 列表，依次打开网站，主动点击注销按钮，网站会收到你的注销请求然后吊销该 cookie，保证开发者拥有无效数据；
-4. 最后的最后，如果还不放心，请修改密码，部分网站在修改密码后会吊销所有 cookie。
-
-[Bangumi 上的相关讨论](https://bgm.tv/group/topic/378915)
-
-目前（2023/3/11），Bangumi Takeout More 已将 Cookie 导出方式由使用插件更换为用户手动在控制台执行指令，未来不会再出现类似的插件导致的安全问题。此后本项目在引入第三方依赖时会更加谨慎。也欢迎各位用户在发现安全问题时及时告知，创建 Issue、站内回帖或站内信均可，我会尽快处理。
-
-（Bangumi Takeout 使用 Bangumi API 实现，不受此次事件的影响。）
-
-## TLDR
-
-再见了，谢谢所有的鱼 🐟
+> [!CAUTION]
+> 如果在 **2023/3/7** 前使用过 Bangumi Takeout More，请务必阅读 "历史版本的安全性问题" 一节。
 
 |                                         | Bangumi Takeout                                              | Bangumi Takeout More                                         |
 | --------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -105,7 +85,7 @@
 ## 可能的下一步
 > 欢迎 PR！
 - [ ] 完全用前端实现（需要前端大触）
-- [ ] 支持筛选和搜索
+- [x] 支持筛选和搜索（感谢 @Tsuiokuyo 的贡献，见 PR#20 ）
 - [x] 正确使用 Bangumi 的 OAuth 认证，而不是手动填 Access Token
 - [x] 使用 [Bangumi/Archive](https://github.com/bangumi/Archive) 作为本地数据源
 - [ ] 写个简单的 GUI 界面
@@ -120,3 +100,19 @@
 - 如有可能请尽量附上完整的 stack trace 和使用的 `takeout.json` 文件。如文件过大无法加入 issue 附件，可以先压缩，然后手动添加一个 `.txt` 后缀名。
 - 启用日志：在 `fetch.py` 中将 `logging.basicConfig(level=logging.INFO)` 改为 `logging.basicConfig(level=logging.DEBUG)`
 
+## 历史版本的安全性问题
+
+如果你在 2023/3/7 之前使用过 Bangumi Takeout More，你可能已经安装了 Get Cookies.txt 插件。这一插件最近被发现为恶意插件。请尽快遵循以下指引以最小化损失：
+1. 首先，卸载扩展；
+2. 有些网站会显示已登录设备，并提供注销的选择，你可以在那个页面注销已登录设备；
+    - Google: 管理您的 Google 账号 - 安全性 - 管理所有设备
+    - Github: Settings - Assess - Sessions
+    - Microsoft: 我的 Microsoft 账户 - 安全 - 登录活动
+3. 最有效的防御手段是：浏览你的 cookie 列表，依次打开网站，主动点击注销按钮，网站会收到你的注销请求然后吊销该 cookie，保证开发者拥有无效数据；
+4. 最后的最后，如果还不放心，请修改密码，部分网站在修改密码后会吊销所有 cookie。
+
+[Bangumi 上的相关讨论](https://bgm.tv/group/topic/378915)
+
+目前（2023/3/11），Bangumi Takeout More 已将 Cookie 导出方式由使用插件更换为用户手动在控制台执行指令，未来不会再出现类似的插件导致的安全问题。此后本项目在引入第三方依赖时会更加谨慎。也欢迎各位用户在发现安全问题时及时告知，创建 Issue、站内回帖或站内信均可，我会尽快处理。
+
+（Bangumi Takeout 使用 Bangumi API 实现，不受此次事件的影响。）
