@@ -344,7 +344,7 @@ def build_ep_status_example():
 def build_header(meta, data):
     generated_at_timestamp = meta["generated_at"]
     generated_at_str = utils.datetime_from_utc_with_offset(
-        datetime.datetime.fromtimestamp(int(generated_at_timestamp), tz=datetime.UTC), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
+        datetime.datetime.utcfromtimestamp(int(generated_at_timestamp)), OFFSET_TIMEDELTA).strftime("%Y-%m-%d %H:%M:%S")
 
     type_summary = build_summary(classify_by_type(data), mapping.subject_type, mapping.subject_color, is_type=True)
     status_summary = build_summary(classify_by_status(data), mapping.collection_status, mapping.collection_color, is_type=False)
