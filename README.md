@@ -62,6 +62,8 @@
     > 如果出现认证异常可以稍后再试，似乎有概率会撞到 CloudFlare 盾，原因暂时未知。
     >
     > 如有可能，请将之前的 `takeout.json` 放置于同目录下，这样会使用增量方式更新收视进度，能极大提升导出速度。
+    >
+    > 运行中断也无需从头再来：脚本会边抓取边写入 `resume.json`（断点续传缓存），中断后直接再次运行 `fetch.py` 即可从断点继续。每次运行都会先重新核对最新的收藏列表，再与缓存合并，因此中断期间新增/删除/修改的收藏不会丢失。运行成功后缓存会被自动清理；如需强制全新导出，删除 `resume.json` 后再次运行即可。
 3. 根据需要运行 `generate_html.py` 和 `generate_csv.py`，正常执行完成后生成的文件在脚本同目录下
    
     > `generate_XXX.py` 只使用 `takeout.json` 作为输入，如果已有 JSON，只需要从 JSON 转换成 HTML，则无需运行 `fetch.py`。
@@ -94,6 +96,15 @@
 - [ ] 裁剪用到的 CSS 和 Javascript 代码，构造一个完全 self-contained，无外部依赖的 HTML 文件
 - [ ] 完成度异常（不存在总集数）时使用 `striped` 进度条样式？
 - [ ] 未播出分集使用 `disbaled` 样式？
+
+## 开发
+
+运行单元测试（`fetch.py` 的网络请求在测试中被替换为离线假数据，不会访问真实 API）：
+
+```bash
+pip install pytest
+pytest
+```
 
 ## Bug 回报
 
