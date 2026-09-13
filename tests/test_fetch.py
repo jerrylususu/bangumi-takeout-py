@@ -360,3 +360,27 @@ def test_fill_from_local_then_remote(tmp_cwd):
     assert items[0]["ep_data"][0][0]["id"] == 1 * 100 + 0 * 10
     assert items[1]["subject_data"]["id"] == 2
     assert service.calls["subject"] == [2]
+
+
+def test_fill_local_archive_missing_subject_does_not_crash(tmp_cwd):
+    # regression: a collection absent from the local archive must fall through
+    # to the remote fetch instead of raising KeyError in the checkpoint pass
+    import pytest
+
+    _write_local_archive(1, ep_types=[0])
+    checkpoints = []
+
+    items = [collection_entry(1, "t"), collection_entry(2, "t")]
+    service = FakeService(
+        collections=items,
+        subjects={2: subject_payload(2)},
+        episodes={2: {"0": episode_payload(2, 0)}},
+        progresses={},
+    )
+
+    fetch.fill_subject_and_ep_data(service, items, save_checkpoint=checkpoints.append)
+
+    assert items[1]["subject_data"]["id"] == 2
+    assert service.calls["subject"] == [2]
+    # subject 2 was fetched remotely; both enriched items must be checkpointed
+    assert [it["subject_id"] for it in checkpoints] == [1, 2]

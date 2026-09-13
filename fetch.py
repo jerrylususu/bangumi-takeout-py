@@ -236,7 +236,7 @@ def fill_subject_and_ep_data(service, items, save_checkpoint=None):
         _fill_episode_data_from_local(items)
         if save_checkpoint:
             for it in items:
-                if it["subject_data"] is not None and it["ep_data"] is not None:
+                if it.get("subject_data") is not None and it.get("ep_data") is not None:
                     save_checkpoint(it)
 
     for item in tqdm(items, desc="load subject & episode data (missing)"):
