@@ -1,4 +1,5 @@
 .pdm.toml
+.venv/
 .vscode/
 __pycache__/
 __pypackages__/
@@ -10,3 +11,4 @@ dump.zip
 .bgm_token
 *.json
 no_gui
+*.jsonl

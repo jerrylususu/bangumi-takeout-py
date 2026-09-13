@@ -1,6 +1,6 @@
 [project]
-name = ""
-version = ""
+name = "bangumi-takeout-py"
+version = "1.4.0"
 description = ""
 authors = [
     {name = "Neko Null", email = "jerrylu.mail@qq.com"},
@@ -14,6 +14,15 @@ license = {text = "MIT"}
 
 [project.urls]
 Homepage = "https://github.com/jerrylususu/bangumi-takeout-py"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.pdm]
 
 [build-system]
