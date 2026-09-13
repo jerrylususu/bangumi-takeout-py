@@ -211,8 +211,8 @@ def test_resume_picks_up_new_collections_added_between_runs(tmp_cwd):
 
     items = fetch.merge_fresh_with_cache(service.collections, cached)
     checkpoints = []
-    fetch.fill_subject_and_ep_data(service, items, save_checkpoint=lambda: checkpoints.append(1))
-    fetch.load_progress_data(service, "user", items, cached, save_checkpoint=lambda: checkpoints.append(1))
+    fetch.fill_subject_and_ep_data(service, items, save_checkpoint=lambda item: checkpoints.append(item))
+    fetch.load_progress_data(service, "user", items, cached, save_checkpoint=lambda item: checkpoints.append(item))
 
     assert [it["subject_id"] for it in items] == [1, 2, 3]
     # entries 1 & 2 were reused from cache, not re-fetched
@@ -269,8 +269,10 @@ def test_fetch_user_collections_paginates(tmp_cwd):
 
 
 def test_cache_round_trip_and_user_guard(tmp_cwd):
-    items = [enriched(1, "t")]
-    fetch.save_cache(items, username="alice")
+    items = [enriched(1, "t"), enriched(2, "t2")]
+    fetch.init_cache("alice")
+    for it in items:
+        fetch.append_cache_item(it)
 
     assert fetch.load_cache("alice") == items
     # a different account resuming must not reuse the cache
@@ -284,6 +286,46 @@ def test_cache_corrupted_file_starts_fresh(tmp_cwd):
     with open(fetch.CACHE_FILENAME, "w", encoding="u8") as f:
         f.write("{not json")
     assert fetch.load_cache("alice") == []
+
+
+def test_cache_appends_line_per_item_and_tolerates_torn_write(tmp_cwd):
+    fetch.init_cache("alice")
+    fetch.append_cache_item(enriched(1, "t1"))
+    fetch.append_cache_item(enriched(2, "t2"))
+
+    with open(fetch.CACHE_FILENAME, "r", encoding="u8") as f:
+        content = f.read()
+    # metadata header + exactly one line per item
+    lines = [ln for ln in content.splitlines() if ln.strip()]
+    assert len(lines) == 3
+    assert fetch._CACHE_META_KEY in lines[0]
+
+    # simulate an interrupted append (no trailing newline, partial JSON)
+    with open(fetch.CACHE_FILENAME, "a", encoding="u8") as f:
+        f.write('{"subject_id": 3, "subject_data": {"na')
+
+    loaded = fetch.load_cache("alice")
+    assert [it["subject_id"] for it in loaded] == [1, 2]
+
+    # appending after an interruption still round-trips
+    fetch.append_cache_item(enriched(4, "t4"))
+    loaded = fetch.load_cache("alice")
+    assert [it["subject_id"] for it in loaded] == [1, 2, 4]
+
+
+def test_cache_init_rewrites_header_for_other_user(tmp_cwd):
+    fetch.init_cache("alice")
+    fetch.append_cache_item(enriched(1, "t"))
+
+    # re-init with the same user must keep the existing state (no truncation)
+    fetch.init_cache("alice")
+    assert [it["subject_id"] for it in fetch.load_cache("alice")] == [1]
+
+    # re-init with a different user must start a fresh cache
+    fetch.init_cache("bob")
+    assert fetch.load_cache("bob") == []
+    fetch.init_cache("bob")
+    assert fetch.load_cache("bob") == []
 
 
 # --------------------------------------------------------------------------- #

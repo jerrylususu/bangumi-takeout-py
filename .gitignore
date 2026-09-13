@@ -11,3 +11,4 @@ dump.zip
 .bgm_token
 *.json
 no_gui
+*.jsonl

@@ -22,7 +22,14 @@ IN_GITHUB_WORKFLOW = env_in_github_workflow()
 # Cache (a.k.a. resume checkpoint) of already-fetched heavy data for the current
 # run. It is written as items are enriched and deleted once a run succeeds, so it
 # only ever represents an interrupted run that can be resumed.
-CACHE_FILENAME = "resume.json"
+#
+# The file is an append-only JSON Lines document: the first line is a small
+# metadata header ({"__meta__": {"user": ...}}), every following line is one
+# enriched item. Appending a single line costs O(item) instead of O(all items),
+# so checkpointing after every item stays linear in total bytes. When loading,
+# an incomplete trailing line (produced by an interrupted append) is skipped.
+CACHE_FILENAME = "resume.jsonl"
+_CACHE_META_KEY = "__meta__"
 COLLECTIONS_FILENAME = "collections.json"
 
 
@@ -97,7 +104,7 @@ def fetch_user_collections(service, username, limit=30):
     """Always fetch the *current* collections list from the API.
 
     The list is the source of truth for what belongs in the takeout. Resume
-    state (resume.json) only caches heavy per-item data and is merged
+    state (resume.jsonl) only caches heavy per-item data and is merged
     against this freshly fetched list, so items added/removed/changed since an
     interrupted run are never lost.
     """
@@ -228,7 +235,9 @@ def fill_subject_and_ep_data(service, items, save_checkpoint=None):
         _fill_subject_data_from_local(items)
         _fill_episode_data_from_local(items)
         if save_checkpoint:
-            save_checkpoint()
+            for it in items:
+                if it["subject_data"] is not None and it["ep_data"] is not None:
+                    save_checkpoint(it)
 
     for item in tqdm(items, desc="load subject & episode data (missing)"):
         need_change = False
@@ -239,7 +248,7 @@ def fill_subject_and_ep_data(service, items, save_checkpoint=None):
             item["ep_data"] = fetch_episode_data(service, item["subject_id"])
             need_change = True
         if need_change and save_checkpoint:
-            save_checkpoint()
+            save_checkpoint(item)
 
 
 def load_old_takeout_items():
@@ -295,7 +304,7 @@ def load_progress_data(service, username, items, cached_items, save_checkpoint=N
         logging.debug(f"loading progress, id={item['subject_id']}")
         item["progress"] = service.get_user_progress(username, item["subject_id"])
         if save_checkpoint:
-            save_checkpoint()
+            save_checkpoint(item)
 
 
 def unix_timestamp_to_datetime_str(timestamp):
@@ -303,33 +312,84 @@ def unix_timestamp_to_datetime_str(timestamp):
 
 
 def load_cache(username):
-    """Read the resume cache, returning the list of previously enriched items."""
+    """Read the resume cache, returning the list of previously enriched items.
+
+    Each line is one item; a corrupt/incomplete line (e.g. the process died
+    mid-append) is skipped instead of invalidating the whole file. Duplicates
+    (same subject appended again after a resume that changed an entry) are
+    fine: callers index them by subject_id so the later line wins.
+    """
     if not Path(CACHE_FILENAME).exists():
         return []
-    try:
-        with open(CACHE_FILENAME, "r", encoding="u8") as f:
-            cache = json.load(f)
-    except json.decoder.JSONDecodeError:
-        logging.info("cache file corrupted, starting a fresh run")
+
+    header_user = None
+    items = []
+    with open(CACHE_FILENAME, "r", encoding="u8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.decoder.JSONDecodeError:
+                logging.info("skipping an incomplete checkpoint line")
+                continue
+            if isinstance(obj, dict) and _CACHE_META_KEY in obj:
+                header_user = obj[_CACHE_META_KEY].get("user")
+                continue
+            if isinstance(obj, dict):
+                items.append(obj)
+
+    if username is not None and header_user not in (None, username):
+        logging.info("cache belongs to a different user, starting a fresh run")
         return []
-
-    if isinstance(cache, list):
-        return cache
-    if isinstance(cache, dict):
-        if username is not None and cache.get("user") not in (None, username):
-            logging.info("cache belongs to a different user, starting a fresh run")
-            return []
-        return cache.get("items", [])
-    return []
+    return items
 
 
-def save_cache(items, username=None):
-    """Write the resume cache atomically (avoids a torn file on interruption)."""
-    payload = {"user": username, "items": items}
+def init_cache(username):
+    """Make sure a (possibly stale) cache file header matches this user.
+
+    The header line is rewritten (with a fresh, empty item list) only when the
+    file is unreadable or belongs to a different user. Otherwise the existing
+    file is kept as-is so that appending new checkpoints doesn't lose the
+    previous state before the first append happens.
+    """
+    header_user = None
+    if Path(CACHE_FILENAME).exists():
+        try:
+            with open(CACHE_FILENAME, "r", encoding="u8") as f:
+                first_line = f.readline()
+            obj = json.loads(first_line)
+            if isinstance(obj, dict) and _CACHE_META_KEY in obj:
+                header_user = obj[_CACHE_META_KEY].get("user")
+        except (json.decoder.JSONDecodeError, ValueError):
+            header_user = None
+
+    if header_user == username:
+        return
+
     tmp_path = CACHE_FILENAME + ".tmp"
     with open(tmp_path, "w", encoding="u8") as f:
-        json.dump(payload, f, ensure_ascii=False)
+        f.write(json.dumps({_CACHE_META_KEY: {"user": username}}, ensure_ascii=False) + "\n")
     os.replace(tmp_path, CACHE_FILENAME)
+
+
+def append_cache_item(item):
+    """Append one enriched item to the resume cache (O(item), not O(all items))."""
+    needs_newline = False
+    if Path(CACHE_FILENAME).exists() and Path(CACHE_FILENAME).stat().st_size > 0:
+        with open(CACHE_FILENAME, "rb") as f:
+            f.seek(-1, os.SEEK_END)
+            needs_newline = f.read(1) != b"\n"
+
+    with open(CACHE_FILENAME, "a", encoding="u8") as f:
+        if needs_newline:
+            # a previous append died mid-line: close that line so the torn
+            # partial JSON becomes its own (skippable) line and stays isolated
+            f.write("\n")
+        f.write(json.dumps({k: v for k, v in item.items() if v is not None}, ensure_ascii=False) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
 
 
 def remove_cache():
@@ -379,10 +439,10 @@ def main():
     collections = fetch_user_collections(service, username)
     items = merge_fresh_with_cache(collections, cached_items)
 
-    def checkpoint():
-        save_cache(items, username)
+    init_cache(username)
 
-    save_cache(items, username)
+    def checkpoint(item):
+        append_cache_item(item)
 
     fill_subject_and_ep_data(service, items, save_checkpoint=checkpoint)
     load_progress_data(service, username, items, cached_items, save_checkpoint=checkpoint)
